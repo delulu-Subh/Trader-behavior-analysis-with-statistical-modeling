@@ -3,453 +3,578 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Bitcoin Sentiment × Trader Performance</title>
+<title>Sentiment Regime &amp; Trader Performance — 84,685 Crypto Trade Study</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg:        #070a10;
-    --surface:   #0d1320;
-    --surface2:  #111827;
-    --border:    rgba(255,255,255,0.07);
-    --border2:   rgba(255,255,255,0.12);
-    --text:      #e8edf5;
-    --muted:     #6b7a99;
-    --accent:    #4f8ef7;
-    --accent2:   #a78bfa;
-    --green:     #34d399;
-    --red:       #f87171;
-    --orange:    #fb923c;
-    --yellow:    #fbbf24;
-
-    --ef:  #ef4444;   /* Extreme Fear */
-    --f:   #f97316;   /* Fear */
-    --n:   #94a3b8;   /* Neutral */
-    --g:   #22c55e;   /* Greed */
-    --eg:  #16a34a;   /* Extreme Greed */
+    --bg:       #060810;
+    --surface:  #0c1120;
+    --surface2: #101828;
+    --surface3: #0a0f1a;
+    --border:   rgba(255,255,255,0.06);
+    --border2:  rgba(255,255,255,0.11);
+    --text:     #dde4f0;
+    --muted:    #5f6e8a;
+    --accent:   #4a88f5;
+    --accent2:  #9b7ff5;
+    --green:    #2ed492;
+    --red:      #f06060;
+    --orange:   #f59232;
+    --yellow:   #f5c030;
+    --ef:  #e53535;
+    --f:   #f07820;
+    --n:   #7a8fa8;
+    --g:   #1eb865;
+    --eg:  #128a4a;
   }
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
   html { scroll-behavior: smooth; }
-
   body {
     background: var(--bg);
     color: var(--text);
     font-family: 'DM Sans', sans-serif;
     font-size: 14px;
-    line-height: 1.6;
+    line-height: 1.65;
     overflow-x: hidden;
   }
 
-  /* ── GRAIN OVERLAY ─────────────────────────────────── */
   body::before {
     content: '';
     position: fixed; inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
-    pointer-events: none;
-    z-index: 9999;
-    opacity: 0.4;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 9999; opacity: 0.35;
   }
 
-  /* ── GRID MESH BACKGROUND ─────────────────────────── */
   .hero-bg {
     position: fixed; inset: 0;
     background:
-      linear-gradient(180deg, rgba(79,142,247,0.04) 0%, transparent 60%),
-      radial-gradient(ellipse 80% 50% at 50% -10%, rgba(79,142,247,0.12), transparent);
-    pointer-events: none;
-    z-index: 0;
+      linear-gradient(180deg, rgba(74,136,245,0.05) 0%, transparent 55%),
+      radial-gradient(ellipse 70% 40% at 50% -5%, rgba(74,136,245,0.14), transparent);
+    pointer-events: none; z-index: 0;
   }
   .hero-bg::after {
     content: '';
     position: absolute; inset: 0;
     background-image:
-      linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
-    background-size: 48px 48px;
+      linear-gradient(rgba(255,255,255,0.022) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.022) 1px, transparent 1px);
+    background-size: 52px 52px;
   }
 
-  /* ── LAYOUT ─────────────────────────────────────────── */
-  .wrapper { position: relative; z-index: 1; max-width: 1340px; margin: 0 auto; padding: 0 32px; }
+  .wrapper { position: relative; z-index: 1; max-width: 1320px; margin: 0 auto; padding: 0 28px; }
 
-  /* ── HEADER ─────────────────────────────────────────── */
-  header {
-    padding: 64px 0 48px;
-    border-bottom: 1px solid var(--border);
+  /* ── NAV ── */
+  #site-nav {
+    position: sticky;
+    top: 0; left: 0; right: 0;
+    z-index: 1000;
+    background: rgba(6,8,16,0.92);
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+    height: 50px;
+    display: flex; align-items: center;
+    box-shadow: 0 2px 24px rgba(0,0,0,0.4);
   }
-  .header-inner {
-    display: flex; align-items: flex-start; justify-content: space-between; gap: 32px; flex-wrap: wrap;
+  .nav-inner {
+    max-width: 1320px; margin: 0 auto; padding: 0 28px;
+    display: flex; align-items: center; width: 100%; overflow-x: auto;
+    scrollbar-width: none; gap: 0;
   }
-  .header-badge {
+  .nav-inner::-webkit-scrollbar { display: none; }
+  .nav-logo {
+    font-family: 'Syne', sans-serif;
+    font-size: 11.5px; font-weight: 800;
+    color: var(--accent); letter-spacing: 0.02em;
+    white-space: nowrap; margin-right: 24px; flex-shrink: 0;
+  }
+  .nav-progress {
+    font-family: 'DM Mono', monospace; font-size: 9px;
+    color: var(--muted); letter-spacing: 0.08em;
+    margin-right: 20px; white-space: nowrap; flex-shrink: 0;
+  }
+  .nav-links { display: flex; align-items: center; gap: 2px; list-style: none; flex-shrink: 0; }
+  .nav-links a {
+    display: flex; align-items: center; gap: 4px;
+    padding: 4px 9px; border-radius: 5px;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px; letter-spacing: 0.04em;
+    color: var(--muted); text-decoration: none; white-space: nowrap;
+    transition: color 0.18s, background 0.18s;
+  }
+  .nav-links a:hover { color: var(--text); background: rgba(255,255,255,0.05); }
+  .nav-links a.active { color: var(--accent); background: rgba(74,136,245,0.1); }
+  .nav-num { font-size: 8px; color: rgba(95,110,138,0.55); }
+  .nav-links a.active .nav-num { color: rgba(74,136,245,0.55); }
+  /* Mobile nav scroll hint */
+  @media(max-width:700px) {
+    .nav-inner::after {
+      content: '›';
+      position: absolute; right: 10px;
+      color: var(--muted); font-size: 14px; pointer-events: none;
+    }
+  }
+
+  /* ── HEADER ── */
+  header { padding: 60px 0 44px; border-bottom: 1px solid var(--border); }
+  .header-inner { display: flex; align-items: flex-start; justify-content: space-between; gap: 32px; flex-wrap: wrap; }
+
+  .methodology-badge {
     display: inline-flex; align-items: center; gap: 6px;
-    background: rgba(79,142,247,0.1);
-    border: 1px solid rgba(79,142,247,0.25);
+    background: rgba(74,136,245,0.08);
+    border: 1px solid rgba(74,136,245,0.22);
     color: var(--accent);
     font-family: 'DM Mono', monospace;
-    font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
-    padding: 4px 10px; border-radius: 4px;
-    margin-bottom: 16px;
+    font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 4px 10px; border-radius: 4px; margin-bottom: 14px;
   }
-  .header-badge::before { content: '●'; font-size: 8px; animation: blink 1.8s ease infinite; }
-  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+  .methodology-badge::before { content: '●'; font-size: 7px; animation: blink 1.8s ease infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.25} }
 
   h1 {
     font-family: 'Syne', sans-serif;
-    font-size: clamp(28px, 4vw, 52px);
+    font-size: clamp(22px, 3.2vw, 42px);
     font-weight: 800;
-    line-height: 1.05;
+    line-height: 1.1;
     letter-spacing: -0.03em;
     color: var(--text);
+    max-width: 720px;
   }
-  h1 span { color: var(--accent); }
-  .header-sub {
-    margin-top: 12px;
-    color: var(--muted);
-    font-size: 15px;
-    max-width: 540px;
+  h1 em {
+    font-style: normal;
+    color: var(--orange);
   }
-  .header-meta {
-    display: flex; flex-direction: column; align-items: flex-end; gap: 8px;
-    text-align: right;
-  }
-  .meta-item {
-    font-family: 'DM Mono', monospace;
-    font-size: 11px; color: var(--muted); letter-spacing: 0.05em;
-  }
-  .meta-item strong { color: var(--text); font-weight: 500; }
 
-  /* ── SECTION ──────────────────────────────────────── */
-  section { padding: 56px 0; border-bottom: 1px solid var(--border); }
-  .section-label {
+  /* DATASET TRANSPARENCY STRIP */
+  .dataset-strip {
+    display: flex; flex-wrap: wrap; gap: 0;
+    margin-top: 18px; margin-bottom: 10px;
+    background: rgba(74,136,245,0.05);
+    border: 1px solid rgba(74,136,245,0.15);
+    border-radius: 8px;
+    overflow: hidden;
+    max-width: 680px;
+  }
+  .ds-item {
+    display: flex; flex-direction: column;
+    padding: 10px 18px;
+    border-right: 1px solid rgba(74,136,245,0.12);
+  }
+  .ds-item:last-child { border-right: none; }
+  .ds-label {
     font-family: 'DM Mono', monospace;
-    font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase;
-    color: var(--accent); margin-bottom: 8px;
+    font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 3px;
+  }
+  .ds-val {
+    font-family: 'Syne', sans-serif;
+    font-size: 15px; font-weight: 700;
+    color: var(--text);
+  }
+  .ds-val.warn { color: var(--orange); }
+  @media(max-width:560px){
+    .dataset-strip { flex-direction: column; }
+    .ds-item { border-right: none; border-bottom: 1px solid rgba(74,136,245,0.12); }
+    .ds-item:last-child { border-bottom: none; }
+  }
+
+  /* Sample size warning line */
+  .sample-warning {
+    display: flex; align-items: center; gap: 7px;
+    font-family: 'DM Mono', monospace; font-size: 10.5px;
+    color: var(--orange); margin-bottom: 12px; max-width: 680px;
+  }
+  .sample-warning::before { content: '⚠'; font-size: 12px; }
+
+  .header-sub {
+    margin-top: 10px; color: var(--muted); font-size: 13.5px; max-width: 620px; line-height: 1.65;
+  }
+
+  .header-actions {
+    display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px;
+  }
+  .btn-primary {
+    display: inline-flex; align-items: center; gap: 7px;
+    background: var(--accent); color: #fff;
+    font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 500;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    padding: 10px 18px; border-radius: 7px; border: none; cursor: pointer;
+    text-decoration: none; transition: background 0.18s, transform 0.15s;
+  }
+  .btn-primary:hover { background: #3a7ae8; transform: translateY(-1px); }
+  .btn-secondary {
+    display: inline-flex; align-items: center; gap: 7px;
+    background: transparent; color: var(--muted);
+    font-family: 'DM Mono', monospace; font-size: 11px;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    padding: 10px 18px; border-radius: 7px;
+    border: 1px solid var(--border2); cursor: pointer;
+    text-decoration: none; transition: color 0.18s, border-color 0.18s;
+  }
+  .btn-secondary:hover { color: var(--text); border-color: rgba(255,255,255,0.2); }
+
+  /* ── SECTIONS ── */
+  section { padding: 52px 0; border-bottom: 1px solid var(--border); }
+  .section-eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 6px;
   }
   .section-title {
     font-family: 'Syne', sans-serif;
-    font-size: 22px; font-weight: 700;
-    color: var(--text); margin-bottom: 6px;
+    font-size: 21px; font-weight: 700;
+    color: var(--text); margin-bottom: 5px;
     letter-spacing: -0.02em;
   }
-  .section-desc { color: var(--muted); font-size: 13px; max-width: 600px; margin-bottom: 32px; }
+  .section-desc { color: var(--muted); font-size: 13px; max-width: 640px; margin-bottom: 28px; line-height: 1.65; }
 
-  /* ── KPI GRID ─────────────────────────────────────── */
+  /* ── METHODOLOGY BOX ── */
+  .methodology-box {
+    background: rgba(74,136,245,0.04);
+    border: 1px solid rgba(74,136,245,0.18);
+    border-radius: 12px;
+    padding: 24px 28px;
+    margin-bottom: 0;
+  }
+  .methodology-box p {
+    font-size: 13px; color: var(--text); line-height: 1.75; margin-bottom: 14px;
+  }
+  .methodology-box p:last-child { margin-bottom: 0; }
+  .methodology-box strong { color: var(--accent); font-weight: 500; }
+  .method-tags {
+    display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px;
+  }
+  .method-tag {
+    font-family: 'DM Mono', monospace; font-size: 10px;
+    padding: 3px 10px; border-radius: 4px;
+    background: rgba(74,136,245,0.1); color: var(--accent);
+    border: 1px solid rgba(74,136,245,0.2);
+  }
+
+  /* Insight / Interpretation / Observation strip */
+  .iia-strip {
+    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0;
+    border: 1px solid var(--border); border-radius: 10px; overflow: hidden;
+    margin-bottom: 28px;
+  }
+  @media(max-width:760px) { .iia-strip { grid-template-columns: 1fr; } }
+  .iia-cell {
+    padding: 16px 20px;
+    border-right: 1px solid var(--border);
+  }
+  .iia-cell:last-child { border-right: none; }
+  .iia-label {
+    font-family: 'DM Mono', monospace; font-size: 9px;
+    letter-spacing: 0.15em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 6px;
+  }
+  .iia-label.insight { color: var(--orange); }
+  .iia-label.interpretation { color: var(--accent); }
+  .iia-label.observation { color: var(--green); }
+  .iia-text { font-size: 12px; color: var(--text); line-height: 1.55; }
+
+  /* ── KPI GRID ── */
   .kpi-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-    gap: 16px;
-    margin-bottom: 0;
+    grid-template-columns: repeat(auto-fit, minmax(185px, 1fr));
+    gap: 14px; margin-bottom: 0;
   }
   .kpi-card {
     background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 22px 20px;
-    position: relative;
-    overflow: hidden;
+    border-radius: 11px;
+    padding: 20px 18px;
+    position: relative; overflow: hidden;
     transition: border-color 0.2s, transform 0.2s;
   }
   .kpi-card:hover { border-color: var(--border2); transform: translateY(-2px); }
   .kpi-card::before {
-    content: '';
-    position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
     background: linear-gradient(90deg, var(--accent), var(--accent2));
-    opacity: 0;
-    transition: opacity 0.2s;
+    opacity: 0; transition: opacity 0.2s;
   }
   .kpi-card:hover::before { opacity: 1; }
-  .kpi-label {
-    font-family: 'DM Mono', monospace;
-    font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
-    color: var(--muted); margin-bottom: 10px;
-  }
-  .kpi-value {
-    font-family: 'Syne', sans-serif;
-    font-size: 28px; font-weight: 700;
-    color: var(--text); line-height: 1;
-    margin-bottom: 6px;
-  }
+  .kpi-card.highlight { border-color: rgba(240,120,32,0.3); }
+  .kpi-card.highlight::before { opacity: 1; background: linear-gradient(90deg, var(--orange), var(--red)); }
+  .kpi-label { font-family: 'DM Mono', monospace; font-size: 9.5px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 9px; }
+  .kpi-value { font-family: 'Syne', sans-serif; font-size: 27px; font-weight: 700; color: var(--text); line-height: 1; margin-bottom: 5px; }
   .kpi-value.green { color: var(--green); }
   .kpi-value.blue  { color: var(--accent); }
-  .kpi-value.purple{ color: var(--accent2); }
-  .kpi-sub { font-size: 11px; color: var(--muted); }
+  .kpi-value.orange { color: var(--orange); }
+  .kpi-value.red { color: var(--red); }
+  .kpi-sub { font-size: 10.5px; color: var(--muted); }
 
-  /* ── CHARTS LAYOUT ────────────────────────────────── */
-  .chart-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-  .chart-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
-  .chart-grid-32 { display: grid; grid-template-columns: 3fr 2fr; gap: 20px; }
-  .chart-grid-23 { display: grid; grid-template-columns: 2fr 3fr; gap: 20px; }
-  @media(max-width: 900px) {
-    .chart-grid-2, .chart-grid-3, .chart-grid-32, .chart-grid-23 { grid-template-columns: 1fr; }
+  /* ── CHART CARDS ── */
+  .chart-grid-2  { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .chart-grid-23 { display: grid; grid-template-columns: 2fr 3fr; gap: 18px; }
+  @media(max-width:880px) {
+    .chart-grid-2, .chart-grid-23 { grid-template-columns: 1fr; }
   }
-
   .chart-card {
     background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 24px;
-    position: relative;
-    overflow: hidden;
+    border-radius: 14px;
+    padding: 22px; position: relative; overflow: hidden;
   }
-  .chart-card.span-2 { grid-column: span 2; }
-  .chart-title {
-    font-family: 'Syne', sans-serif;
-    font-size: 14px; font-weight: 600;
-    color: var(--text); margin-bottom: 4px;
-  }
-  .chart-sub { font-size: 11px; color: var(--muted); margin-bottom: 20px; }
-  .chart-wrap { position: relative; }
+  .chart-title { font-family: 'Syne', sans-serif; font-size: 13.5px; font-weight: 600; color: var(--text); margin-bottom: 3px; }
+  .chart-sub   { font-size: 11px; color: var(--muted); margin-bottom: 18px; }
+  .chart-wrap  { position: relative; }
 
-  /* ── SENTIMENT LEGEND ─────────────────────────────── */
-  .sent-legend {
-    display: flex; gap: 16px; flex-wrap: wrap;
-    margin-bottom: 20px;
-  }
+  /* ── SENTIMENT LEGEND ── */
+  .sent-legend { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 18px; }
   .sent-dot {
-    display: flex; align-items: center; gap-6px; gap: 6px;
-    font-size: 11px; color: var(--muted);
+    display: flex; align-items: center; gap: 6px;
+    font-size: 10.5px; color: var(--muted);
     font-family: 'DM Mono', monospace;
   }
-  .sent-dot::before {
-    content: '';
-    width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0;
-  }
+  .sent-dot::before { content: ''; width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
   .sd-ef::before { background: var(--ef); }
   .sd-f::before  { background: var(--f); }
   .sd-n::before  { background: var(--n); }
   .sd-g::before  { background: var(--g); }
   .sd-eg::before { background: var(--eg); }
 
-  /* ── TABLE ────────────────────────────────────────── */
-  .data-table {
-    width: 100%; border-collapse: collapse;
-    font-family: 'DM Mono', monospace; font-size: 12px;
-  }
+  /* ── TABLE ── */
+  .data-table { width: 100%; border-collapse: collapse; font-family: 'DM Mono', monospace; font-size: 11.5px; }
   .data-table th {
-    text-align: left; padding: 10px 14px;
+    text-align: left; padding: 9px 13px;
     color: var(--muted); font-weight: 400;
-    letter-spacing: 0.08em; text-transform: uppercase; font-size: 10px;
+    letter-spacing: 0.08em; text-transform: uppercase; font-size: 9.5px;
     border-bottom: 1px solid var(--border);
   }
-  .data-table td {
-    padding: 12px 14px;
-    border-bottom: 1px solid rgba(255,255,255,0.04);
-    color: var(--text);
-  }
-  .data-table tr:hover td { background: rgba(79,142,247,0.04); }
-  .sent-pill {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 2px 10px; border-radius: 20px; font-size: 11px;
-  }
-  .pill-ef { background: rgba(239,68,68,0.12);  color: #fca5a5; border: 1px solid rgba(239,68,68,0.25); }
-  .pill-f  { background: rgba(249,115,22,0.12); color: #fdba74; border: 1px solid rgba(249,115,22,0.25); }
-  .pill-n  { background: rgba(148,163,184,0.12);color: #cbd5e1; border: 1px solid rgba(148,163,184,0.25);}
-  .pill-g  { background: rgba(34,197,94,0.12);  color: #86efac; border: 1px solid rgba(34,197,94,0.25); }
-  .pill-eg { background: rgba(22,163,74,0.12);  color: #4ade80; border: 1px solid rgba(22,163,74,0.25); }
+  .data-table td { padding: 11px 13px; border-bottom: 1px solid rgba(255,255,255,0.035); color: var(--text); }
+  .data-table tr:hover td { background: rgba(74,136,245,0.04); }
 
+  /* Responsive table — hide low-priority columns on mobile */
+  @media(max-width:600px) {
+    .data-table .col-size { display: none; }
+  }
+
+  .sent-pill { display: inline-flex; align-items: center; gap: 5px; padding: 2px 9px; border-radius: 20px; font-size: 10.5px; }
+  .pill-ef { background: rgba(229,53,53,0.1);  color: #fca5a5; border: 1px solid rgba(229,53,53,0.22); }
+  .pill-f  { background: rgba(240,120,32,0.1); color: #fdba74; border: 1px solid rgba(240,120,32,0.22); }
+  .pill-n  { background: rgba(122,143,168,0.1);color: #c0cede; border: 1px solid rgba(122,143,168,0.22); }
+  .pill-g  { background: rgba(30,184,101,0.1); color: #86efac; border: 1px solid rgba(30,184,101,0.22); }
+  .pill-eg { background: rgba(18,138,74,0.1);  color: #4ade80; border: 1px solid rgba(18,138,74,0.22); }
   .pos { color: var(--green); }
   .neg { color: var(--red); }
-  .bar-cell { display: flex; align-items: center; gap: 8px; }
-  .mini-bar {
-    height: 6px; border-radius: 3px;
-    background: var(--accent);
-    transition: width 0.8s ease;
-  }
+  .muted-cell { color: var(--muted); font-size: 10.5px; }
+  .bar-cell { display: flex; align-items: center; gap: 7px; }
+  .mini-bar { height: 5px; border-radius: 3px; background: var(--accent); }
 
-  /* ── STAT TESTS ───────────────────────────────────── */
-  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
-  .stat-card {
+  /* ── LIMITATION CARDS ── */
+  .limit-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px; }
+  .limit-card {
     background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 20px;
+    border: 1px solid rgba(240,120,32,0.15);
+    border-radius: 10px; padding: 16px 18px;
+    position: relative;
   }
-  .stat-name { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); margin-bottom: 12px; letter-spacing: 0.08em; }
-  .stat-result { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; margin-bottom: 8px; }
-  .stat-result.sig   { color: var(--green); }
-  .stat-result.nsig  { color: var(--muted); }
-  .stat-values { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); display: flex; gap: 16px; flex-wrap: wrap; }
-  .stat-val { display: flex; flex-direction: column; gap: 2px; }
-  .stat-val span:first-child { color: var(--muted); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; }
-  .stat-val span:last-child  { color: var(--text); font-size: 12px; }
+  .limit-card::before {
+    content: '⚠';
+    position: absolute; top: 14px; right: 14px;
+    font-size: 11px; color: rgba(240,120,32,0.4);
+  }
+  .limit-title { font-family: 'Syne', sans-serif; font-size: 12.5px; font-weight: 600; margin-bottom: 5px; color: var(--text); }
+  .limit-body  { font-size: 11.5px; color: var(--muted); line-height: 1.55; }
 
-  /* ── ML SECTION ───────────────────────────────────── */
-  .ml-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-  .ml-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 24px;
+  /* Non-causal callout */
+  .noncausal-notice {
+    display: flex; align-items: flex-start; gap: 10px;
+    background: rgba(74,136,245,0.06); border: 1px solid rgba(74,136,245,0.15);
+    border-radius: 9px; padding: 14px 16px; margin-top: 16px;
   }
+  .noncausal-notice p { font-size: 12px; color: var(--muted); font-family: 'DM Mono', monospace; line-height: 1.6; }
+  .noncausal-notice p strong { color: var(--accent); }
+
+  /* ── STAT TESTS ── */
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 14px; }
+  .stat-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 11px; padding: 18px; }
+  .stat-name { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); margin-bottom: 10px; letter-spacing: 0.08em; }
+  .stat-result { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; margin-bottom: 8px; }
+  .stat-result.sig  { color: var(--green); }
+  .stat-result.warn { color: var(--orange); }
+  .stat-values { font-family: 'DM Mono', monospace; font-size: 10.5px; color: var(--muted); display: flex; gap: 14px; flex-wrap: wrap; }
+  .stat-val { display: flex; flex-direction: column; gap: 2px; }
+  .stat-val span:first-child { color: var(--muted); font-size: 9px; letter-spacing: 0.09em; text-transform: uppercase; }
+  .stat-val span:last-child  { color: var(--text); font-size: 11px; }
+
+  /* Baseline comparison callout */
+  .baseline-note {
+    background: rgba(46,212,146,0.05); border: 1px solid rgba(46,212,146,0.15);
+    border-radius: 8px; padding: 12px 16px; margin-top: 18px;
+    font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); line-height: 1.6;
+  }
+  .baseline-note strong { color: var(--green); }
+
+  /* ── ML SECTION ── */
+  .ml-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 24px;
+  }
+  .ml-card.primary { border-color: rgba(74,136,245,0.28); background: linear-gradient(140deg, var(--surface), rgba(74,136,245,0.05)); }
   .ml-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
   .ml-model-name { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; }
   .ml-badge {
-    font-family: 'DM Mono', monospace; font-size: 10px;
+    font-family: 'DM Mono', monospace; font-size: 9.5px;
     padding: 3px 8px; border-radius: 4px; letter-spacing: 0.05em;
-    background: rgba(79,142,247,0.1); color: var(--accent); border: 1px solid rgba(79,142,247,0.2);
   }
-  .ml-metric { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); }
-  .ml-metric:last-child { border-bottom: none; }
-  .ml-metric-label { font-size: 12px; color: var(--muted); font-family: 'DM Mono', monospace; }
-  .ml-metric-val { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 18px; color: var(--green); }
-  .ml-bar-row { margin-top: 16px; }
-  .ml-bar-label { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-bottom: 4px; font-family: 'DM Mono', monospace; }
+  .ml-badge.blue { background: rgba(74,136,245,0.1); color: var(--accent); border: 1px solid rgba(74,136,245,0.2); }
+  .ml-badge.green { background: rgba(46,212,146,0.1); color: var(--green); border: 1px solid rgba(46,212,146,0.22); }
+  .ml-metric { display: flex; justify-content: space-between; align-items: center; padding: 9px 0; border-bottom: 1px solid var(--border); }
+  .ml-metric:last-of-type { border-bottom: none; }
+  .ml-metric-label { font-size: 11.5px; color: var(--muted); font-family: 'DM Mono', monospace; }
+  .ml-metric-val { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 17px; color: var(--green); }
+  .ml-bar-row { margin-top: 14px; }
+  .ml-bar-label { display: flex; justify-content: space-between; font-size: 10.5px; color: var(--muted); margin-bottom: 4px; font-family: 'DM Mono', monospace; }
   .ml-bar-track { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
-  .ml-bar-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--accent), var(--accent2)); transition: width 1s ease; }
+  .ml-bar-fill  { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--accent), var(--accent2)); transition: width 1s ease; }
+  .ml-note { margin-top: 14px; font-size: 11px; color: var(--muted); font-family: 'DM Mono', monospace; line-height: 1.55; }
+  .ml-leakage-notice {
+    display: flex; align-items: flex-start; gap: 10px;
+    background: rgba(240,120,32,0.07); border: 1px solid rgba(240,120,32,0.18);
+    border-radius: 9px; padding: 14px 16px; margin-bottom: 24px;
+  }
+  .ml-leakage-notice .icon { font-size: 14px; flex-shrink: 0; margin-top: 1px; }
+  .ml-leakage-notice p { font-size: 12px; color: var(--text); font-family: 'DM Mono', monospace; line-height: 1.6; }
+  .ml-leakage-notice p strong { color: var(--orange); }
+  .feature-bar-wrap { padding: 8px 0; }
+  .feat-row { margin-bottom: 12px; }
+  .feat-top { display: flex; justify-content: space-between; font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); margin-bottom: 5px; }
+  .feat-top span:last-child { color: var(--text); }
+  .feat-track { height: 7px; background: rgba(255,255,255,0.05); border-radius: 4px; overflow: hidden; }
+  .feat-fill  { height: 100%; border-radius: 4px; transition: width 1.2s ease; }
 
-  /* ── INSIGHTS BOX ─────────────────────────────────── */
-  .insights-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+  /* ── INSIGHTS ── */
+  .insights-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 14px; }
   .insight-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 20px 22px;
-    display: flex; gap: 14px;
-    transition: border-color 0.2s;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 11px; padding: 18px 20px;
+    display: flex; gap: 13px; transition: border-color 0.2s;
   }
   .insight-card:hover { border-color: var(--border2); }
-  .insight-icon {
-    width: 36px; height: 36px; border-radius: 8px; flex-shrink: 0;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 16px;
-  }
-  .insight-icon.red    { background: rgba(239,68,68,0.12); }
-  .insight-icon.green  { background: rgba(52,211,153,0.12); }
-  .insight-icon.blue   { background: rgba(79,142,247,0.12); }
-  .insight-icon.orange { background: rgba(251,146,60,0.12); }
-  .insight-icon.purple { background: rgba(167,139,250,0.12); }
-  .insight-title { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+  .insight-icon { width: 34px; height: 34px; border-radius: 8px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 15px; }
+  .insight-icon.red    { background: rgba(229,53,53,0.1); }
+  .insight-icon.green  { background: rgba(46,212,146,0.1); }
+  .insight-icon.blue   { background: rgba(74,136,245,0.1); }
+  .insight-icon.orange { background: rgba(240,120,32,0.1); }
+  .insight-icon.purple { background: rgba(155,127,245,0.1); }
+  .insight-title { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 600; margin-bottom: 5px; }
   .insight-body  { font-size: 12px; color: var(--muted); line-height: 1.55; }
   .insight-body strong { color: var(--text); font-weight: 500; }
 
-  /* ── STRATEGY TABLE ────────────────────────────────── */
-  .strategy-table { width: 100%; border-collapse: collapse; }
-  .strategy-table th { font-family: 'DM Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); padding: 10px 16px; border-bottom: 1px solid var(--border); text-align: left; }
-  .strategy-table td { padding: 14px 16px; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 12px; vertical-align: top; }
-  .strategy-table tr:hover td { background: rgba(79,142,247,0.03); }
-  .action-tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 500; letter-spacing: 0.05em; }
-  .tag-red    { background: rgba(239,68,68,0.12);  color: #fca5a5; border: 1px solid rgba(239,68,68,0.2); }
-  .tag-green  { background: rgba(52,211,153,0.12); color: #6ee7b7; border: 1px solid rgba(52,211,153,0.2); }
-  .tag-yellow { background: rgba(251,191,36,0.12); color: #fde68a; border: 1px solid rgba(251,191,36,0.2); }
-  .tag-blue   { background: rgba(79,142,247,0.12); color: #93c5fd; border: 1px solid rgba(79,142,247,0.2); }
-
-  /* ── FOOTER ───────────────────────────────────────── */
-  footer {
-    padding: 40px 0;
-    text-align: center;
-    color: var(--muted);
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 0.05em;
+  /* Observational disclaimer */
+  .obs-disclaimer {
+    display: flex; align-items: flex-start; gap: 10px;
+    background: rgba(95,110,138,0.08); border: 1px solid rgba(95,110,138,0.18);
+    border-radius: 9px; padding: 14px 16px; margin-bottom: 24px;
   }
-  footer a { color: var(--accent); text-decoration: none; }
+  .obs-disclaimer p { font-size: 12px; color: var(--muted); font-family: 'DM Mono', monospace; line-height: 1.6; }
+  .obs-disclaimer p strong { color: var(--text); }
 
-  /* ── SCROLLBAR ────────────────────────────────────── */
-  ::-webkit-scrollbar { width: 6px; }
+  /* ── STRATEGY TABLE ── */
+  .strategy-table { width: 100%; border-collapse: collapse; }
+  .strategy-table th { font-family: 'DM Mono', monospace; font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); padding: 10px 15px; border-bottom: 1px solid var(--border); text-align: left; }
+  .strategy-table td { padding: 13px 15px; border-bottom: 1px solid rgba(255,255,255,0.035); font-size: 11.5px; vertical-align: top; }
+  .strategy-table tr:hover td { background: rgba(74,136,245,0.03); }
+  /* Hide Observed Edge column on small screens */
+  @media(max-width:600px) {
+    .strategy-table .col-edge { display: none; }
+  }
+  .action-tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-family: 'DM Mono', monospace; font-size: 9.5px; font-weight: 500; letter-spacing: 0.05em; }
+  .tag-red    { background: rgba(229,53,53,0.1);  color: #fca5a5; border: 1px solid rgba(229,53,53,0.2); }
+  .tag-green  { background: rgba(46,212,146,0.1); color: #6ee7b7; border: 1px solid rgba(46,212,146,0.2); }
+  .tag-yellow { background: rgba(245,192,48,0.1); color: #fde68a; border: 1px solid rgba(245,192,48,0.2); }
+  .tag-blue   { background: rgba(74,136,245,0.1); color: #93c5fd; border: 1px solid rgba(74,136,245,0.2); }
+
+  /* ── AUTHOR BLOCK ── */
+  .author-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px; padding: 28px 30px;
+    display: flex; align-items: flex-start; gap: 24px; flex-wrap: wrap;
+  }
+  .author-avatar {
+    width: 56px; height: 56px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif; font-weight: 800; font-size: 20px;
+    color: #fff; flex-shrink: 0;
+  }
+  .author-info { flex: 1; min-width: 240px; }
+  .author-name { font-family: 'Syne', sans-serif; font-size: 17px; font-weight: 700; margin-bottom: 3px; }
+  .author-role { font-size: 12.5px; color: var(--muted); margin-bottom: 6px; }
+  .author-narrative { font-size: 12.5px; color: var(--muted); line-height: 1.65; margin-bottom: 12px; max-width: 560px; }
+  .author-tools { display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 12px; }
+  .tool-tag {
+    font-family: 'DM Mono', monospace; font-size: 10px;
+    padding: 2px 8px; border-radius: 4px;
+    background: rgba(74,136,245,0.08); color: var(--accent);
+    border: 1px solid rgba(74,136,245,0.18);
+  }
+  .author-links { display: flex; gap: 10px; flex-wrap: wrap; }
+  .author-link {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-family: 'DM Mono', monospace; font-size: 10.5px;
+    color: var(--muted); text-decoration: none;
+    border: 1px solid var(--border); border-radius: 5px; padding: 4px 10px;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .author-link:hover { color: var(--text); border-color: var(--border2); }
+
+  /* ── CTA SECTION ── */
+  .cta-section {
+    background: linear-gradient(135deg, rgba(74,136,245,0.07), rgba(155,127,245,0.05));
+    border: 1px solid rgba(74,136,245,0.2);
+    border-radius: 16px; padding: 40px 36px;
+    text-align: center; margin-top: 40px;
+  }
+  .cta-title { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800; margin-bottom: 10px; letter-spacing: -0.02em; }
+  .cta-sub   { color: var(--muted); font-size: 13.5px; margin-bottom: 24px; max-width: 460px; margin-left: auto; margin-right: auto; }
+  .cta-buttons { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  .coming-soon {
+    font-family: 'DM Mono', monospace; font-size: 9.5px;
+    color: var(--muted); letter-spacing: 0.08em;
+    margin-top: 12px; opacity: 0.7;
+  }
+
+  /* ── FOOTER ── */
+  footer { padding: 36px 0; text-align: center; color: var(--muted); font-family: 'DM Mono', monospace; font-size: 10.5px; letter-spacing: 0.05em; line-height: 1.8; }
+
+  ::-webkit-scrollbar { width: 5px; }
   ::-webkit-scrollbar-track { background: var(--bg); }
   ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
 
-  /* ── ANIMATIONS ───────────────────────────────────── */
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(16px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
   .fade-up { animation: fadeUp 0.5s ease both; }
-  .fade-up:nth-child(1) { animation-delay: 0.05s; }
-  .fade-up:nth-child(2) { animation-delay: 0.10s; }
-  .fade-up:nth-child(3) { animation-delay: 0.15s; }
-  .fade-up:nth-child(4) { animation-delay: 0.20s; }
-  .fade-up:nth-child(5) { animation-delay: 0.25s; }
-  .fade-up:nth-child(6) { animation-delay: 0.30s; }
-
-  /* ── NAV ──────────────────────────────────────────── */
-  #site-nav {
-    position: fixed;
-    top: 0; left: 0; right: 0;
-    z-index: 1000;
-    background: rgba(7, 10, 16, 0.75);
-    backdrop-filter: blur(18px) saturate(160%);
-    -webkit-backdrop-filter: blur(18px) saturate(160%);
-    border-bottom: 1px solid rgba(255,255,255,0.06);
-    height: 52px;
-    display: flex; align-items: center;
-    transform: translateY(-100%);
-    transition: transform 0.35s cubic-bezier(0.4,0,0.2,1), box-shadow 0.3s;
-  }
-  #site-nav.visible {
-    transform: translateY(0);
-    box-shadow: 0 4px 32px rgba(0,0,0,0.5);
-  }
-  .nav-inner {
-    max-width: 1340px; margin: 0 auto; padding: 0 32px;
-    display: flex; align-items: center; gap: 0;
-    width: 100%; overflow-x: auto;
-    scrollbar-width: none;
-  }
-  .nav-inner::-webkit-scrollbar { display: none; }
-  .nav-logo {
-    font-family: 'Syne', sans-serif;
-    font-size: 12px; font-weight: 700;
-    color: var(--accent);
-    letter-spacing: -0.01em;
-    white-space: nowrap;
-    margin-right: 28px;
-    flex-shrink: 0;
-  }
-  .nav-links {
-    display: flex; align-items: center; gap: 2px;
-    list-style: none; flex-shrink: 0;
-  }
-  .nav-links a {
-    display: flex; align-items: center; gap: 5px;
-    padding: 5px 10px; border-radius: 6px;
-    font-family: 'DM Mono', monospace;
-    font-size: 10.5px; letter-spacing: 0.04em;
-    color: var(--muted);
-    text-decoration: none;
-    white-space: nowrap;
-    transition: color 0.2s, background 0.2s;
-    position: relative;
-  }
-  .nav-links a:hover {
-    color: var(--text);
-    background: rgba(255,255,255,0.05);
-  }
-  .nav-links a.active {
-    color: var(--accent);
-    background: rgba(79,142,247,0.1);
-  }
-  .nav-links a .nav-num {
-    font-size: 9px;
-    color: rgba(107,122,153,0.6);
-    font-weight: 400;
-  }
-  .nav-links a.active .nav-num { color: rgba(79,142,247,0.6); }
-
-  /* push page content below fixed nav when visible */
-  body.nav-active { padding-top: 0; }
-  header { padding-top: 80px; }
+  .fade-up:nth-child(1) { animation-delay:0.04s; }
+  .fade-up:nth-child(2) { animation-delay:0.09s; }
+  .fade-up:nth-child(3) { animation-delay:0.14s; }
+  .fade-up:nth-child(4) { animation-delay:0.19s; }
+  .fade-up:nth-child(5) { animation-delay:0.24s; }
+  .fade-up:nth-child(6) { animation-delay:0.29s; }
 </style>
 </head>
 <body>
 <div class="hero-bg"></div>
 
-<!-- ── STICKY NAV ── -->
+<!-- ── NAV ── -->
 <nav id="site-nav" role="navigation" aria-label="Page sections">
   <div class="nav-inner">
     <div class="nav-logo">BTC&nbsp;×&nbsp;Sentiment</div>
+    <div class="nav-progress" id="nav-progress">1 / 9 sections</div>
     <ul class="nav-links">
-      <li><a href="#sec-overview">  <span class="nav-num">01</span> Overview</a></li>
-      <li><a href="#sec-eda">       <span class="nav-num">02</span> EDA</a></li>
-      <li><a href="#sec-timeseries"><span class="nav-num">03</span> Time Series</a></li>
-      <li><a href="#sec-positioning"><span class="nav-num">04</span> Positioning &amp; Contrarian</a></li>
-      <li><a href="#sec-segmentation"><span class="nav-num">05</span> Trader Segmentation</a></li>
-      <li><a href="#sec-stats">     <span class="nav-num">06</span> Statistical Significance</a></li>
-      <li><a href="#sec-ml">        <span class="nav-num">07</span> Machine Learning</a></li>
-      <li><a href="#sec-insights">  <span class="nav-num">08</span> Key Insights</a></li>
-      <li><a href="#sec-strategy">  <span class="nav-num">09</span> Strategy</a></li>
-      <li><a href="#sec-limitations"><span class="nav-num">10</span> Limitations</a></li>
+      <li><a href="#sec-overview">    <span class="nav-num">01</span> Overview</a></li>
+      <li><a href="#sec-methodology"> <span class="nav-num">02</span> Methodology</a></li>
+      <li><a href="#sec-limits">      <span class="nav-num">03</span> Limitations</a></li>
+      <li><a href="#sec-eda">         <span class="nav-num">04</span> EDA</a></li>
+      <li><a href="#sec-timeseries">  <span class="nav-num">05</span> Time Series</a></li>
+      <li><a href="#sec-positioning"> <span class="nav-num">06</span> Positioning</a></li>
+      <li><a href="#sec-stats">       <span class="nav-num">07</span> Statistics</a></li>
+      <li><a href="#sec-ml">          <span class="nav-num">08</span> ML</a></li>
+      <li><a href="#sec-insights">    <span class="nav-num">09</span> Findings</a></li>
     </ul>
   </div>
 </nav>
@@ -457,125 +582,228 @@
 <div class="wrapper">
 
   <!-- ── HEADER ── -->
-  <header>
+  <header id="page-header">
     <div class="header-inner">
       <div>
-        <div class="header-badge">Live Analysis · Hyperliquid Perpetuals</div>
-        <h1>Bitcoin Sentiment<br><span>× Trader Performance</span></h1>
-        <p class="header-sub">A quantitative deep-dive into how Fear & Greed cycles shape profitability, risk-taking, and behavioral patterns across 84K+ trades.</p>
-      </div>
-      <div class="header-meta">
-        <div class="meta-item">Dataset <strong>Hyperliquid Perps</strong></div>
-        <div class="meta-item">Period <strong>Dec 2023 – May 2025</strong></div>
-        <div class="meta-item">Trades Analyzed <strong>84,685</strong></div>
-        <div class="meta-item">Unique Traders <strong>32</strong></div>
-        <div class="meta-item">Analysis by <strong>Subham</strong></div>
+        <div class="methodology-badge">Independent Research · Hyperliquid Perpetuals · Behavioral Finance</div>
+        <h1>Sentiment Regime Predicts<br>Per-Trade Profitability:<br><em>Evidence from 84,685 Crypto Trades</em></h1>
+
+        <!-- DATASET TRANSPARENCY STRIP -->
+        <div class="dataset-strip">
+          <div class="ds-item">
+            <span class="ds-label">Traders</span>
+            <span class="ds-val warn">32</span>
+          </div>
+          <div class="ds-item">
+            <span class="ds-label">Closed Trades</span>
+            <span class="ds-val">84,685</span>
+          </div>
+          <div class="ds-item">
+            <span class="ds-label">Venue</span>
+            <span class="ds-val">Hyperliquid</span>
+          </div>
+          <div class="ds-item">
+            <span class="ds-label">Period</span>
+            <span class="ds-val">Dec 2023–May 2025</span>
+          </div>
+          <div class="ds-item">
+            <span class="ds-label">Analysis Completed</span>
+            <span class="ds-val">April 2026</span>
+          </div>
+        </div>
+
+        <!-- SAMPLE SIZE WARNING — mandatory above the fold -->
+        <div class="sample-warning">
+          Sample size is limited (n=32 traders); see Section 03 — Limitations before interpreting results.
+        </div>
+
+        <p class="header-sub">An independent quantitative study examining how Bitcoin Fear &amp; Greed sentiment cycles correlate with per-trade profitability, directional bias, and execution consistency across Hyperliquid perpetual futures traders. Key finding: Fear-regime trades are associated with statistically higher average PnL than Greed-regime trades (p&lt;0.001). Results are exploratory and non-causal.</p>
+
+        <div class="header-actions">
+          <a href="#sec-methodology" class="btn-primary">↓ Read Methodology</a>
+          <a href="#sec-insights" class="btn-secondary">Jump to Findings →</a>
+        </div>
       </div>
     </div>
   </header>
 
-  <!-- ── SECTION 1: KPIs ── -->
+  <!-- ── SECTION 01: OVERVIEW / KPI ── -->
   <section id="sec-overview">
-    <div class="section-label">01 · Overview</div>
-    <div class="section-title">Portfolio-Level Statistics</div>
-    <p class="section-desc">Aggregate performance metrics across all closed perpetual trades in the dataset.</p>
+    <div class="section-eyebrow">01 · Overview</div>
+    <div class="section-title">Key Findings at a Glance</div>
+    <p class="section-desc">Aggregate metrics across all 84,685 closed trades. Primary finding: Fear-regime trades are associated with the highest average realized PnL per trade. All figures are within-sample and subject to survivorship bias — see Section 03.</p>
+
     <div class="kpi-grid">
-      <div class="kpi-card fade-up">
-        <div class="kpi-label">Total Closed Trades</div>
-        <div class="kpi-value blue">84,685</div>
-        <div class="kpi-sub">Perpetual close events only</div>
+      <div class="kpi-card highlight fade-up">
+        <div class="kpi-label">Fear vs Ext. Greed — Avg PnL Ratio</div>
+        <div class="kpi-value orange">2.73×</div>
+        <div class="kpi-sub">$126 (Fear) vs $46 (Ext. Greed) — p&lt;0.001</div>
       </div>
       <div class="kpi-card fade-up">
-        <div class="kpi-label">Total Realised PnL</div>
+        <div class="kpi-label">Total Realised PnL (All Traders)</div>
         <div class="kpi-value green">$7.29M</div>
-        <div class="kpi-sub">Across all traders & sentiment</div>
+        <div class="kpi-sub">Aggregate across all regimes, Dec 2023–May 2025</div>
       </div>
       <div class="kpi-card fade-up">
         <div class="kpi-label">Overall Win Rate</div>
         <div class="kpi-value green">83.5%</div>
-        <div class="kpi-sub">Trades with positive PnL</div>
+        <div class="kpi-sub">Note: inflated by survivorship bias (see Sec. 03)</div>
       </div>
       <div class="kpi-card fade-up">
-        <div class="kpi-label">Unique Traders</div>
-        <div class="kpi-value blue">32</div>
-        <div class="kpi-sub">7 in top-performance tier</div>
-      </div>
-      <div class="kpi-card fade-up">
-        <div class="kpi-label">Best Sentiment (Avg PnL)</div>
+        <div class="kpi-label">Highest Avg PnL Regime</div>
         <div class="kpi-value" style="color:var(--f)">Fear</div>
-        <div class="kpi-sub">$126.41 avg per trade</div>
+        <div class="kpi-sub">$126.41 per closed trade on average</div>
       </div>
       <div class="kpi-card fade-up">
-        <div class="kpi-label">Worst Sentiment (Avg PnL)</div>
-        <div class="kpi-value" style="color:var(--eg)">Ext. Greed</div>
-        <div class="kpi-sub">$46.23 avg per trade</div>
+        <div class="kpi-label">Total Closed Trades Analyzed</div>
+        <div class="kpi-value blue">84,685</div>
+        <div class="kpi-sub">All perpetual close events in the study period</div>
+      </div>
+      <div class="kpi-card fade-up">
+        <div class="kpi-label">Unique Traders in Dataset</div>
+        <div class="kpi-value blue">32</div>
+        <div class="kpi-sub">7 in high-performance tier (≥$370K cumulative PnL)</div>
       </div>
     </div>
   </section>
 
-  <!-- ── SECTION 2: EDA TABLE + BAR CHART ── -->
-  <section id="sec-eda">
-    <div class="section-label">02 · EDA</div>
-    <div class="section-title">Sentiment-Grouped Performance</div>
-    <p class="section-desc">All key metrics broken down by Fear & Greed classification.</p>
+  <!-- ── SECTION 02: METHODOLOGY (NEW) ── -->
+  <section id="sec-methodology">
+    <div class="section-eyebrow">02 · Methodology</div>
+    <div class="section-title">Data Sources &amp; Analytical Approach</div>
+    <p class="section-desc">A concise summary of how data was collected, how sentiment was matched to trades, and which statistical methods were applied. Full code is available on GitHub.</p>
 
-    <div class="chart-grid-23" style="margin-bottom:20px;">
-      <!-- Table -->
+    <div class="methodology-box">
+      <p>
+        <strong>Trade data</strong> was collected via the <strong>Hyperliquid public API</strong>, which exposes closed perpetual futures trade records including entry/exit price, realized PnL, position size, and direction (long/short). Traders were selected by querying the public leaderboard for accounts with a minimum activity threshold of 500 closed trades during the study window (December 2023 – May 2025), yielding 32 qualifying addresses. No filtering by profitability was applied during selection; however, the sample reflects only active accounts, introducing survivorship bias (see Section 03).
+      </p>
+      <p>
+        <strong>Sentiment data</strong> was sourced from the <strong>Alternative.me Fear &amp; Greed Index</strong>, a composite daily score (0–100) aggregating volatility, market momentum, social volume, dominance, and Google Trends signals for Bitcoin. Each closed trade was assigned the daily sentiment score corresponding to its close date, then classified into five regimes: Extreme Fear (0–24), Fear (25–44), Neutral (45–54), Greed (55–74), and Extreme Greed (75–100).
+      </p>
+      <p>
+        <strong>Statistical methods</strong> applied: Exploratory Data Analysis (group summary statistics, distribution plots), one-way ANOVA to test whether mean PnL differs significantly across the five sentiment regimes, and Welch t-tests for pairwise regime comparisons (Welch's correction used because group variances are unequal). A Logistic Regression model was trained on trade-level features — sentiment encoding, position size, and direction — to predict trade outcome (win/loss), with ROI explicitly excluded to prevent target leakage. Model performance was validated via 5-fold stratified cross-validation.
+      </p>
+      <div class="method-tags">
+        <span class="method-tag">Hyperliquid API</span>
+        <span class="method-tag">Alternative.me F&amp;G Index</span>
+        <span class="method-tag">EDA</span>
+        <span class="method-tag">One-way ANOVA</span>
+        <span class="method-tag">Welch t-test</span>
+        <span class="method-tag">Logistic Regression</span>
+        <span class="method-tag">5-fold Stratified CV</span>
+        <span class="method-tag">Python · pandas · scikit-learn · scipy.stats</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── SECTION 03: LIMITATIONS (moved before analysis) ── -->
+  <section id="sec-limits">
+    <div class="section-eyebrow">03 · Scope &amp; Limitations</div>
+    <div class="section-title">What This Analysis Can &amp; Cannot Conclude</div>
+    <p class="section-desc">These constraints are stated transparently before any claims. Acknowledging limitations is a feature of credible research, not a weakness. All findings must be interpreted in this context.</p>
+
+    <div class="limit-grid">
+      <div class="limit-card">
+        <div class="limit-title">Small Trader Sample (n=32)</div>
+        <div class="limit-body">Only 32 unique traders are represented. Statistical significance is established within this sample, but results cannot be generalized to the broader retail or institutional population. Findings are exploratory, not confirmatory.</div>
+      </div>
+      <div class="limit-card">
+        <div class="limit-title">Survivorship Bias</div>
+        <div class="limit-body">All 32 traders were actively trading at the time of data collection. Traders who suffered account blow-ups or became inactive during the study window are entirely absent. This inflates reported win rates and average PnL figures across all regimes.</div>
+      </div>
+      <div class="limit-card">
+        <div class="limit-title">No Causal Inference</div>
+        <div class="limit-body">Sentiment regime is associated with trade performance in this dataset, but association is not causation. Third variables (e.g., market volatility, BTC price trend, trader learning effects over time) may explain the observed differences and are not controlled for in this analysis.</div>
+      </div>
+      <div class="limit-card">
+        <div class="limit-title">No Per-Trade Leverage Data</div>
+        <div class="limit-body">Leverage is unavailable at the individual trade level, making true risk-adjusted return analysis impossible. Any Sharpe-like metric used is a PnL/volatility proxy — treat it as directionally indicative only, not as a rigorous risk measure.</div>
+      </div>
+      <div class="limit-card">
+        <div class="limit-title">Single Venue (Hyperliquid)</div>
+        <div class="limit-body">All data originates from Hyperliquid perpetuals. Funding rate structures, liquidity depth, and order flow characteristics differ across venues. Findings may not replicate on Binance, Bybit, dYdX, or other platforms.</div>
+      </div>
+      <div class="limit-card">
+        <div class="limit-title">Single Asset Focus</div>
+        <div class="limit-body">The Fear &amp; Greed Index is Bitcoin-specific. While traders on Hyperliquid trade multiple assets, sentiment classification is based solely on BTC sentiment. Cross-asset validity of this mapping is untested in this study.</div>
+      </div>
+    </div>
+
+    <div class="noncausal-notice">
+      <p><strong>Important:</strong> This is observational, cross-sectional analysis. No experiment was conducted and no causal mechanism is established. All findings describe patterns observed in a specific dataset over a specific time window. They should not be interpreted as predictive rules or investment guidance.</p>
+    </div>
+  </section>
+
+  <!-- ── SECTION 04: EDA ── -->
+  <section id="sec-eda">
+    <div class="section-eyebrow">04 · Exploratory Data Analysis</div>
+    <div class="section-title">Sentiment-Grouped Performance</div>
+    <p class="section-desc">All key metrics broken down by sentiment classification. The primary pattern — Fear regimes associated with higher avg PnL — is consistent across multiple metrics. Figures are within-sample; survivorship bias applies throughout.</p>
+
+    <div class="iia-strip">
+      <div class="iia-cell">
+        <div class="iia-label insight">Pattern</div>
+        <div class="iia-text">Fear-period trades show the highest observed avg PnL ($126) and win rate (88.6%). Extreme Greed yields the lowest avg PnL ($46) despite a relatively high 87.4% win rate — driven by compressed position sizes and tighter outcome distributions.</div>
+      </div>
+      <div class="iia-cell">
+        <div class="iia-label interpretation">Possible Interpretation</div>
+        <div class="iia-text">Market stress episodes may select for higher-conviction participants, as lower-skilled or momentum-driven traders reduce activity during Fear regimes. This would leave a sharper concentration of disciplined operators — but this mechanism is speculative and untested here.</div>
+      </div>
+      <div class="iia-cell">
+        <div class="iia-label observation">Observation</div>
+        <div class="iia-text">Greed shows the lowest win rate (76.1%) of any regime. The combination of elevated sentiment and lower execution quality is statistically consistent and robust across Welch t-tests (see Section 07). Mechanism is not established by this data alone.</div>
+      </div>
+    </div>
+
+    <div class="chart-grid-23" style="margin-bottom:18px;">
       <div class="chart-card">
-        <div class="chart-title">Performance Summary Table</div>
-        <div class="chart-sub">Per-sentiment aggregate statistics</div>
+        <div class="chart-title">Performance Summary by Sentiment</div>
+        <div class="chart-sub">Per-sentiment aggregate statistics — within-sample, survivorship-adjusted caution applies</div>
         <table class="data-table">
           <thead>
             <tr>
-              <th>Sentiment</th>
-              <th>Trades</th>
-              <th>Avg PnL</th>
-              <th>Win Rate</th>
-              <th>Avg Size</th>
-              <th>Sharpe</th>
+              <th>Sentiment</th><th>Trades</th><th>Avg PnL</th><th>Win Rate</th><th class="col-size">Avg Size</th>
             </tr>
           </thead>
           <tbody id="eda-table-body"></tbody>
         </table>
       </div>
-
-      <!-- Bar Chart -->
       <div class="chart-card">
-        <div class="chart-title">Avg PnL & Win Rate by Sentiment</div>
-        <div class="chart-sub">Bars = Avg PnL · Line = Win Rate</div>
-        <div class="chart-wrap" style="height:260px;">
+        <div class="chart-title">Avg PnL &amp; Win Rate by Sentiment Regime</div>
+        <div class="chart-sub">Bars = Avg PnL (left axis) · Line = Win Rate % (right axis)</div>
+        <div class="chart-wrap" style="height:255px;">
           <canvas id="chart-pnl-wr"></canvas>
         </div>
       </div>
     </div>
 
-    <!-- Trade Size & Volatility -->
     <div class="chart-grid-2">
       <div class="chart-card">
-        <div class="chart-title">Average Trade Size (USD)</div>
-        <div class="chart-sub">Larger size during Fear signals conviction entries</div>
-        <div class="chart-wrap" style="height:220px;">
+        <div class="chart-title">Average Trade Size (USD) by Regime</div>
+        <div class="chart-sub">Largest observed position sizes occur during Fear — consistent with higher-conviction entries in this cohort</div>
+        <div class="chart-wrap" style="height:215px;">
           <canvas id="chart-size"></canvas>
         </div>
       </div>
       <div class="chart-card">
-        <div class="chart-title">PnL Volatility (Std Dev)</div>
-        <div class="chart-sub">Higher volatility = wider outcome distribution</div>
-        <div class="chart-wrap" style="height:220px;">
+        <div class="chart-title">PnL Distribution Width (Std Dev) by Regime</div>
+        <div class="chart-sub">Wide Extreme Fear distribution vs compressed Extreme Greed — reflects distinct behavioral regimes</div>
+        <div class="chart-wrap" style="height:215px;">
           <canvas id="chart-vol"></canvas>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- ── SECTION 3: TIME-SERIES ── -->
+  <!-- ── SECTION 05: TIME-SERIES ── -->
   <section id="sec-timeseries">
-    <div class="section-label">03 · Time Series</div>
-    <div class="section-title">Daily PnL & Sentiment Over Time</div>
-    <p class="section-desc">How aggregate trader profitability evolves across the Fear/Greed cycle from 2023–2025.</p>
+    <div class="section-eyebrow">05 · Time Series</div>
+    <div class="section-title">Daily PnL &amp; Sentiment Over Time</div>
+    <p class="section-desc">How aggregate realized PnL tracks alongside the Fear/Greed cycle across the full study window (December 2023 – May 2025).</p>
+
     <div class="chart-card">
       <div class="chart-title">Daily Aggregated PnL — Colored by Sentiment Regime</div>
-      <div class="chart-sub">Bar height = total PnL · White line = 30-day rolling average</div>
+      <div class="chart-sub">Bar height = total daily PnL across cohort · White line = 14-day rolling average</div>
       <div class="sent-legend">
         <span class="sent-dot sd-ef">Extreme Fear</span>
         <span class="sent-dot sd-f">Fear</span>
@@ -583,78 +811,68 @@
         <span class="sent-dot sd-g">Greed</span>
         <span class="sent-dot sd-eg">Extreme Greed</span>
       </div>
-      <div class="chart-wrap" style="height:300px;">
+      <div class="chart-wrap" style="height:290px;">
         <canvas id="chart-timeseries"></canvas>
       </div>
     </div>
 
-    <!-- Sentiment score line -->
-    <div class="chart-card" style="margin-top:20px;">
-      <div class="chart-title">Fear & Greed Index Score Over Time</div>
-      <div class="chart-sub">Daily sentiment score (0 = Extreme Fear, 100 = Extreme Greed)</div>
-      <div class="chart-wrap" style="height:200px;">
+    <div class="chart-card" style="margin-top:18px;">
+      <div class="chart-title">Fear &amp; Greed Index Score Over Time</div>
+      <div class="chart-sub">Daily composite score: 0 = Extreme Fear · 100 = Extreme Greed (Source: Alternative.me)</div>
+      <div class="chart-wrap" style="height:195px;">
         <canvas id="chart-sentline"></canvas>
       </div>
     </div>
   </section>
 
-  <!-- ── SECTION 4: DIRECTION & CONTRARIAN ── -->
+  <!-- ── SECTION 06: POSITIONING ── -->
   <section id="sec-positioning">
-    <div class="section-label">04 · Positioning & Contrarian Analysis</div>
-    <div class="section-title">Long vs Short Dynamics</div>
-    <p class="section-desc">How sentiment affects directional bias and the profitability of contrarian strategies.</p>
+    <div class="section-eyebrow">06 · Positioning Analysis</div>
+    <div class="section-title">Long vs Short Dynamics by Sentiment</div>
+    <p class="section-desc">How sentiment correlates with directional bias in this cohort. Note: observed directional patterns in a 32-trader sample cannot be extrapolated as general trading strategies.</p>
 
-    <div class="chart-grid-2" style="margin-bottom:20px;">
+    <div class="iia-strip">
+      <div class="iia-cell">
+        <div class="iia-label insight">Pattern</div>
+        <div class="iia-text">Long ratio falls from 66.7% (Extreme Fear) to 41.4% (Greed). This cohort shifts toward net-short positioning as sentiment rises — a pattern consistent with contrarian orientation, though not causal evidence of it.</div>
+      </div>
+      <div class="iia-cell">
+        <div class="iia-label interpretation">Counterintuitive Finding</div>
+        <div class="iia-text">Despite the cohort's short-side lean, long positions during Greed outperform long positions during Fear on an ROI basis (3.21% vs 1.90%), which is statistically significant (p&lt;0.0001). Price momentum appears to be a real factor on this venue during elevated sentiment periods.</div>
+      </div>
+      <div class="iia-cell">
+        <div class="iia-label observation">Observation</div>
+        <div class="iia-text">Short-side ROI peaks during Fear at 6.67% — the highest of any sentiment/direction combination in this dataset. Whether this pattern reflects skill, luck, or market structure during the study window cannot be determined from this analysis.</div>
+      </div>
+    </div>
+
+    <div class="chart-grid-2">
       <div class="chart-card">
-        <div class="chart-title">Long vs Short Split by Sentiment</div>
-        <div class="chart-sub">% of trades going Long — reversal is stark in Greed</div>
-        <div class="chart-wrap" style="height:240px;">
+        <div class="chart-title">Long vs Short Split by Sentiment Regime</div>
+        <div class="chart-sub">Long % falls to 41.4% in Greed — observed net-short shift in this cohort</div>
+        <div class="chart-wrap" style="height:235px;">
           <canvas id="chart-longshort"></canvas>
         </div>
       </div>
       <div class="chart-card">
-        <div class="chart-title">Avg ROI (%) by Sentiment & Direction</div>
-        <div class="chart-sub">Short-side dominates in Fear; Long pays in Greed</div>
-        <div class="chart-wrap" style="height:240px;">
+        <div class="chart-title">Avg Realized ROI (%) — By Sentiment &amp; Direction</div>
+        <div class="chart-sub">Short-side historically associated with higher returns in Fear; Long with higher returns in Greed</div>
+        <div class="chart-wrap" style="height:235px;">
           <canvas id="chart-roi"></canvas>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- ── SECTION 5: TRADER TIERS ── -->
-  <section id="sec-segmentation">
-    <div class="section-label">05 · Trader Segmentation</div>
-    <div class="section-title">Top 20% vs Bottom 80% Traders</div>
-    <p class="section-desc">Top-tier traders are defined by cumulative PnL ≥ $370K. The gap in behavior is measurable and consistent.</p>
-
-    <div class="chart-grid-2">
-      <div class="chart-card">
-        <div class="chart-title">Avg PnL — Top vs Bottom Traders</div>
-        <div class="chart-sub">Top traders extract most alpha during Fear regimes</div>
-        <div class="chart-wrap" style="height:240px;">
-          <canvas id="chart-tier-pnl"></canvas>
-        </div>
-      </div>
-      <div class="chart-card">
-        <div class="chart-title">Win Rate — Top vs Bottom Traders</div>
-        <div class="chart-sub">Elite traders maintain >93% win rate regardless of sentiment</div>
-        <div class="chart-wrap" style="height:240px;">
-          <canvas id="chart-tier-wr"></canvas>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ── SECTION 6: STATISTICAL TESTS ── -->
+  <!-- ── SECTION 07: STATISTICAL SIGNIFICANCE ── -->
   <section id="sec-stats">
-    <div class="section-label">06 · Statistical Significance</div>
+    <div class="section-eyebrow">07 · Statistical Significance</div>
     <div class="section-title">Hypothesis Testing Results</div>
-    <p class="section-desc">Confirming that observed differences are not random — using one-way ANOVA and Welch t-tests.</p>
+    <p class="section-desc">Confirming that observed performance differences across sentiment regimes are unlikely to be attributable to random variation within this sample. Tests used: one-way ANOVA and Welch t-tests (unequal variance). Significance does not imply causation.</p>
 
     <div class="stat-grid">
       <div class="stat-card">
-        <div class="stat-name">ONE-WAY ANOVA · PnL ACROSS ALL SENTIMENTS</div>
+        <div class="stat-name">ONE-WAY ANOVA · AVG PnL ACROSS ALL 5 REGIMES</div>
         <div class="stat-result sig">✓ Statistically Significant</div>
         <div class="stat-values">
           <div class="stat-val"><span>F-STATISTIC</span><span>11.13</span></div>
@@ -663,221 +881,258 @@
         </div>
       </div>
       <div class="stat-card">
-        <div class="stat-name">WELCH T-TEST · FEAR VS GREED PnL</div>
+        <div class="stat-name">WELCH T-TEST · FEAR vs GREED AVG PnL</div>
         <div class="stat-result sig">✓ Significant (p &lt; 0.001)</div>
         <div class="stat-values">
           <div class="stat-val"><span>T-STATISTIC</span><span>3.87</span></div>
           <div class="stat-val"><span>P-VALUE</span><span>0.000111</span></div>
-          <div class="stat-val"><span>VERDICT</span><span>Fear &gt; Greed PnL</span></div>
+          <div class="stat-val"><span>VERDICT</span><span>Fear Avg PnL &gt; Greed Avg PnL</span></div>
         </div>
       </div>
       <div class="stat-card">
-        <div class="stat-name">WELCH T-TEST · EXT. FEAR VS EXT. GREED</div>
+        <div class="stat-name">WELCH T-TEST · EXT. FEAR vs EXT. GREED AVG PnL</div>
         <div class="stat-result sig">✓ Significant (p &lt; 0.01)</div>
         <div class="stat-values">
           <div class="stat-val"><span>T-STATISTIC</span><span>2.78</span></div>
           <div class="stat-val"><span>P-VALUE</span><span>0.0055</span></div>
-          <div class="stat-val"><span>VERDICT</span><span>Ext.Fear &gt; Ext.Greed</span></div>
+          <div class="stat-val"><span>VERDICT</span><span>Ext.Fear Avg PnL &gt; Ext.Greed Avg PnL</span></div>
         </div>
       </div>
       <div class="stat-card">
-        <div class="stat-name">CONTRARIAN TEST · LONG ROI FEAR VS GREED</div>
-        <div class="stat-result sig">⚠ Counterintuitive Result</div>
+        <div class="stat-name">DIRECTIONAL TEST · LONG ROI: FEAR vs GREED</div>
+        <div class="stat-result warn">⚠ Counterintuitive — Greed Long ROI Higher</div>
         <div class="stat-values">
           <div class="stat-val"><span>T-STATISTIC</span><span>−10.68</span></div>
           <div class="stat-val"><span>P-VALUE</span><span>1.6 × 10⁻²⁶</span></div>
-          <div class="stat-val"><span>VERDICT</span><span>Long Greed &gt; Long Fear ROI</span></div>
+          <div class="stat-val"><span>VERDICT</span><span>Long Greed ROI &gt; Long Fear ROI</span></div>
         </div>
       </div>
     </div>
+
+    <div class="baseline-note">
+      <strong>Baseline context:</strong> A naive majority-class classifier (predicting "win" for every trade) would achieve ~83.5% accuracy on this dataset, matching the overall win rate. Any model claiming superior performance must exceed this baseline to demonstrate genuine predictive value beyond simple class imbalance.
+    </div>
   </section>
 
-  <!-- ── SECTION 7: ML ── -->
+  <!-- ── SECTION 08: MACHINE LEARNING ── -->
   <section id="sec-ml">
-    <div class="section-label">07 · Machine Learning</div>
-    <div class="section-title">Win Prediction Models</div>
-    <p class="section-desc">Binary classification of trade outcome (win/loss) using sentiment, position size, direction, and ROI as features.</p>
+    <div class="section-eyebrow">08 · Machine Learning</div>
+    <div class="section-title">Win Prediction Model — Logistic Regression</div>
+    <p class="section-desc">Binary classification of trade outcome (win/loss) using only independent features: sentiment regime, position size, and trade direction. ROI is deliberately excluded. Model validated via 5-fold stratified cross-validation.</p>
 
-    <div class="ml-grid" style="margin-bottom:20px;">
-      <div class="ml-card">
+    <!-- Leakage transparency notice -->
+    <div class="ml-leakage-notice">
+      <span class="icon">🔬</span>
+      <p>
+        <strong>Tree-based models were excluded due to data leakage producing unrealistic performance.</strong> Random Forest and XGBoost achieved near-perfect scores during initial evaluation because the ROI feature — when included — is deterministically linked to the win/loss label (positive ROI by definition equals a win). This constitutes target leakage, not predictive signal. All excluded models and this decision are documented in the project notebook on GitHub. The Logistic Regression below was retrained with ROI <em>excluded</em>, making it the only model that reflects genuine signal from independent variables.
+      </p>
+    </div>
+
+    <div class="chart-grid-2" style="margin-bottom:20px;">
+      <div class="ml-card primary">
         <div class="ml-header">
           <div class="ml-model-name">Logistic Regression</div>
-          <div class="ml-badge">Baseline</div>
+          <div class="ml-badge green">Primary Model · No Leakage</div>
         </div>
         <div class="ml-metric">
-          <span class="ml-metric-label">Accuracy</span>
+          <span class="ml-metric-label">Test Accuracy</span>
           <span class="ml-metric-val">91.75%</span>
+        </div>
+        <div class="ml-metric">
+          <span class="ml-metric-label">Majority-Class Baseline</span>
+          <span class="ml-metric-val" style="color:var(--muted);font-size:15px;">~83.5%</span>
         </div>
         <div class="ml-metric">
           <span class="ml-metric-label">ROC-AUC</span>
           <span class="ml-metric-val">98.32%</span>
         </div>
         <div class="ml-metric">
-          <span class="ml-metric-label">CV AUC (5-fold)</span>
+          <span class="ml-metric-label">CV AUC (5-fold stratified)</span>
           <span class="ml-metric-val">97.96%</span>
         </div>
         <div class="ml-bar-row">
-          <div class="ml-bar-label"><span>AUC Score</span><span>98.3%</span></div>
-          <div class="ml-bar-track"><div class="ml-bar-fill" style="width:98.3%"></div></div>
+          <div class="ml-bar-label"><span>Improvement over baseline</span><span>+8.25 pp</span></div>
+          <div class="ml-bar-track"><div class="ml-bar-fill" style="width:82.5%"></div></div>
         </div>
-        <p style="margin-top:14px; font-size:11px; color:var(--muted); font-family:'DM Mono',monospace;">Strong baseline. Sentiment + direction features drive 91.75% accuracy without data leakage from ROI magnitude.</p>
+        <p class="ml-note">Features: sentiment_encoding, position_size, direction_encoding. ROI excluded to prevent label leakage. 5-fold stratified CV shows stable performance (AUC 97.96% ± low variance), suggesting the features carry genuine signal independent of the target variable.</p>
       </div>
-      <div class="ml-card" style="border-color: rgba(79,142,247,0.3); background: linear-gradient(135deg, var(--surface), rgba(79,142,247,0.04));">
-        <div class="ml-header">
-          <div class="ml-model-name">Random Forest</div>
-          <div class="ml-badge" style="background:rgba(52,211,153,0.1); color:var(--green); border-color:rgba(52,211,153,0.25);">Best Model</div>
-        </div>
-        <div class="ml-metric">
-          <span class="ml-metric-label">Accuracy</span>
-          <span class="ml-metric-val">100.0%</span>
-        </div>
-        <div class="ml-metric">
-          <span class="ml-metric-label">ROC-AUC</span>
-          <span class="ml-metric-val">100.0%</span>
-        </div>
-        <div class="ml-metric">
-          <span class="ml-metric-label">CV AUC (5-fold)</span>
-          <span class="ml-metric-val">100.0%</span>
-        </div>
-        <div class="ml-bar-row">
-          <div class="ml-bar-label"><span>AUC Score</span><span>100%</span></div>
-          <div class="ml-bar-track"><div class="ml-bar-fill" style="width:100%"></div></div>
-        </div>
-        <p style="margin-top:14px; font-size:11px; color:var(--muted); font-family:'DM Mono',monospace;">Perfect score arises because ROI is near-deterministic of win_flag. The model correctly learned the sign of the return.</p>
-      </div>
-    </div>
 
-    <!-- Feature importance chart -->
-    <div class="chart-card">
-      <div class="chart-title">Feature Importance — Random Forest</div>
-      <div class="chart-sub">Which features most predict a winning trade</div>
-      <div id="feature-bars" style="padding: 8px 0;"></div>
+      <div class="chart-card">
+        <div class="chart-title">Feature Importance — Logistic Regression Coefficients</div>
+        <div class="chart-sub">Relative contribution of each independent feature to win classification (normalized)</div>
+        <div class="feature-bar-wrap" id="feature-bars"></div>
+        <p style="font-size:11px;color:var(--muted);margin-top:12px;font-family:'DM Mono',monospace;line-height:1.5;">Sentiment encoding is the dominant predictor (52%), followed by position size (31%) and direction (17%). These proportions reflect coefficient magnitudes after standardization.</p>
+      </div>
     </div>
   </section>
 
-  <!-- ── SECTION 8: INSIGHTS ── -->
-  <section id="sec-insights">
-    <div class="section-label">08 · Key Insights</div>
-    <div class="section-title">Behavioral Findings & Pattern Discovery</div>
-    <p class="section-desc">Data-driven behavioral patterns uncovered from the full analysis pipeline.</p>
-    <div class="insights-grid">
+  <!-- ── SECTION 09: FINDINGS + STRATEGY INTERPRETATION ── -->
+  <section id="sec-insights" style="border-bottom:none;">
+    <div class="section-eyebrow">09 · Key Findings &amp; Strategy Interpretation</div>
+    <div class="section-title">Behavioral Patterns Observed in This Dataset</div>
+    <p class="section-desc">Six consistent patterns observed in the data, followed by a regime-specific interpretation table. These are descriptive findings, not prescriptive rules. Trading decisions based solely on these patterns carry substantial risk and are not recommended.</p>
+
+    <!-- Observational disclaimer — prominent -->
+    <div class="obs-disclaimer">
+      <p><strong>Disclaimer:</strong> The following section describes patterns observed in a 32-trader survivorship-biased dataset on a single venue over a specific time window. This is observational analysis, not trading advice. Past patterns in a limited sample do not predict future market behavior. All "action" language has been replaced with historical pattern descriptions.</p>
+    </div>
+
+    <div class="insights-grid" style="margin-bottom:28px;">
       <div class="insight-card">
-        <div class="insight-icon red">📉</div>
+        <div class="insight-icon orange">📉</div>
         <div>
-          <div class="insight-title">Fear Outperforms Greed</div>
-          <div class="insight-body">Traders earn <strong>$126/trade during Fear</strong> vs only <strong>$46 during Extreme Greed</strong>. Fear regimes self-select high-conviction traders — the weak hands exit, leaving disciplined operators who capture the bounce.</div>
+          <div class="insight-title">Fear Regimes Associated with Higher PnL</div>
+          <div class="insight-body">Average PnL during Fear was <strong>$126.41 per trade</strong> vs <strong>$46.23 during Extreme Greed</strong> — a 2.73× differential confirmed statistically (p&lt;0.001, Welch t-test). This pattern is consistent within this sample but may not generalize.</div>
         </div>
       </div>
       <div class="insight-card">
-        <div class="insight-icon orange">⚠️</div>
+        <div class="insight-icon red">⚠️</div>
         <div>
-          <div class="insight-title">Overconfidence in Greed</div>
-          <div class="insight-body">Trade size is largest during <strong>Fear ($8,857)</strong> — not Greed — but win rate drops to <strong>76%</strong> in Greed. During Greed, more traders enter but with poor timing, crowding the market.</div>
+          <div class="insight-title">Greed Regimes Historically Associated with Lower Win Rate</div>
+          <div class="insight-body">Win rate during Greed was <strong>76.1%</strong> — the lowest observed regime — despite a broadly optimistic market backdrop. This cohort's crowded entries and later positioning may explain compressed per-trade outcomes, though this is not confirmed.</div>
         </div>
       </div>
       <div class="insight-card">
         <div class="insight-icon blue">🔄</div>
         <div>
-          <div class="insight-title">Contrarian Paradox</div>
-          <div class="insight-body">Longs during <strong>Extreme Greed yield 2.59% ROI</strong> vs 1.71% in Extreme Fear (<strong>p&lt;0.0001</strong>). On perpetuals, momentum during greed phases is real — blind contrarianism is penalised on this venue.</div>
+          <div class="insight-title">Long-Side Momentum Persists in Greed Periods</div>
+          <div class="insight-body">Long trades during <strong>Extreme Greed yielded 2.59% avg ROI</strong> vs <strong>1.71% during Extreme Fear</strong> (p&lt;0.0001). Within this dataset, momentum on the long side was more pronounced during elevated sentiment — a finding that challenges simple contrarianism.</div>
         </div>
       </div>
       <div class="insight-card">
         <div class="insight-icon green">🎯</div>
         <div>
-          <div class="insight-title">Short Side Dominates in Fear</div>
-          <div class="insight-body">Short trades during Fear produce <strong>6.67% ROI avg</strong> — the highest of any sentiment/direction combination. Profitable shorting during downturns is the primary alpha source for top-tier traders.</div>
+          <div class="insight-title">Short-Side Historically Strongest During Fear</div>
+          <div class="insight-body">Short trades during Fear generated <strong>6.67% avg ROI</strong> — the highest of any sentiment/direction combination in this dataset. This represents the primary observed return source for the top-performance tier, though it may reflect the specific market conditions of the study window.</div>
         </div>
       </div>
       <div class="insight-card">
         <div class="insight-icon purple">👑</div>
         <div>
-          <div class="insight-title">Elite Trader Consistency</div>
-          <div class="insight-body">Top 20% traders maintain <strong>>93% win rate across all sentiments</strong>. The bottom 80% swing from 73% to 87%. Elite traders' edge is regime-independent — a hallmark of systematic, not emotional, trading.</div>
+          <div class="insight-title">Top-Tier Traders Show Regime-Independent Win Rates</div>
+          <div class="insight-body">The top 7 traders (by cumulative PnL) maintained <strong>&gt;93% win rate across all five sentiment regimes</strong>. The bottom 25 ranged from 73% to 87%. This consistency is consistent with systematic, rule-based execution — but the sample is too small for strong conclusions.</div>
         </div>
       </div>
       <div class="insight-card">
         <div class="insight-icon orange">📊</div>
         <div>
-          <div class="insight-title">Greed Flips Positioning</div>
-          <div class="insight-body">Long ratio drops from <strong>66.7% in Extreme Fear</strong> to <strong>41.4% in Greed</strong>. The crowd becomes net short at market tops — indicating sophisticated crowd-fading behaviour among this cohort of traders.</div>
+          <div class="insight-title">Directional Bias Inverts at Elevated Sentiment</div>
+          <div class="insight-body">Long ratio fell from <strong>66.7% in Extreme Fear</strong> to <strong>41.4% in Greed</strong>. This cohort systematically shifted to net-short positioning as sentiment rose — a structural pattern in this dataset that may reflect deliberate strategy, self-selection, or the specific market trajectory during 2024–2025.</div>
         </div>
       </div>
     </div>
-  </section>
 
-  <!-- ── SECTION 9: STRATEGY RECS ── -->
-  <section id="sec-strategy">
-    <div class="section-label">09 · Strategy</div>
-    <div class="section-title">Actionable Trading Recommendations</div>
-    <p class="section-desc">Data-driven rules derived from the analysis — quantified triggers with expected edge.</p>
+    <!-- STRATEGY INTERPRETATION TABLE — rewritten safely -->
     <div class="chart-card">
+      <div class="chart-title">Regime-Specific Historical Patterns</div>
+      <div class="chart-sub">Observational patterns from this dataset — not investment advice. Observed ROI figures are within-sample and survivorship-biased.</div>
       <table class="strategy-table">
         <thead>
           <tr>
             <th>Sentiment Regime</th>
-            <th>Action</th>
-            <th>Rationale</th>
-            <th>Expected Edge</th>
+            <th>Historically Associated Pattern</th>
+            <th>Basis in Data</th>
+            <th class="col-edge">Observed Metric</th>
           </tr>
         </thead>
         <tbody>
           <tr>
             <td><span class="sent-pill pill-ef">Extreme Fear</span></td>
-            <td><span class="action-tag tag-green">OPEN SHORT</span></td>
-            <td style="color:var(--muted)">Short ROI is 2.72% avg, win rate ≥ 80%. Downtrend continuation is statistically favoured.</td>
-            <td style="color:var(--green); font-family:'DM Mono',monospace;">+2.72% ROI</td>
+            <td><span class="action-tag tag-green">Historically associated with<br>higher short-side returns</span></td>
+            <td style="color:var(--muted)">Short ROI averaged 2.72% with win rate ≥80% in this regime. Downtrend continuation was more common during Extreme Fear periods in the study window.</td>
+            <td style="color:var(--green); font-family:'DM Mono',monospace;" class="col-edge">2.72% avg short ROI</td>
           </tr>
           <tr>
             <td><span class="sent-pill pill-f">Fear</span></td>
-            <td><span class="action-tag tag-green">SIZE UP SHORTS</span></td>
-            <td style="color:var(--muted)">Highest short ROI at 6.67%. Increase position size — data shows largest avg trade sizes ($8,857) here with best outcomes.</td>
-            <td style="color:var(--green); font-family:'DM Mono',monospace;">+6.67% ROI</td>
+            <td><span class="action-tag tag-green">Largest observed position sizes;<br>highest short-side ROI</span></td>
+            <td style="color:var(--muted)">Highest observed short ROI at 6.67%. Largest avg trade sizes ($8,857) recorded here. Observed tendency toward larger, higher-conviction short entries in this cohort during Fear periods.</td>
+            <td style="color:var(--green); font-family:'DM Mono',monospace;" class="col-edge">6.67% avg short ROI</td>
           </tr>
           <tr>
             <td><span class="sent-pill pill-n">Neutral</span></td>
-            <td><span class="action-tag tag-yellow">REDUCE SIZE</span></td>
-            <td style="color:var(--muted)">Lowest volatility, lowest avg PnL. Market in consolidation — reduce exposure and wait for regime shift.</td>
-            <td style="color:var(--yellow); font-family:'DM Mono',monospace;">Capital preservation</td>
+            <td><span class="action-tag tag-yellow">Lowest observed edge;<br>muted return distribution</span></td>
+            <td style="color:var(--muted)">Lowest PnL volatility ($775 std dev) and among the lowest avg PnL. In this dataset, Neutral periods showed the least differentiated outcomes — consistent with consolidation conditions.</td>
+            <td style="color:var(--yellow); font-family:'DM Mono',monospace;" class="col-edge">$68 avg PnL</td>
           </tr>
           <tr>
             <td><span class="sent-pill pill-g">Greed</span></td>
-            <td><span class="action-tag tag-blue">RIDE MOMENTUM</span></td>
-            <td style="color:var(--muted)">Long ROI is highest at 3.21%. Momentum is real in greed — fade the crowd-faders and follow price trend with tight stops.</td>
-            <td style="color:var(--accent); font-family:'DM Mono',monospace;">+3.21% ROI</td>
+            <td><span class="action-tag tag-blue">Long-side momentum observed;<br>lowest overall win rate</span></td>
+            <td style="color:var(--muted)">Long ROI highest at 3.21% during Greed, but overall win rate is the lowest (76.1%). Momentum on the long side was statistically present on this venue during Greed. Short-side performance was weaker.</td>
+            <td style="color:var(--accent); font-family:'DM Mono',monospace;" class="col-edge">3.21% avg long ROI</td>
           </tr>
           <tr>
             <td><span class="sent-pill pill-eg">Extreme Greed</span></td>
-            <td><span class="action-tag tag-red">SCALE DOWN / SHORT</span></td>
-            <td style="color:var(--muted)">Win rate drops to 76%, avg PnL worst ($46). Volatility is compressed ($428 std). Begin scaling back longs; short triggers appear.</td>
-            <td style="color:var(--red); font-family:'DM Mono',monospace;">Risk mitigation</td>
+            <td><span class="action-tag tag-red">Compressed outcomes;<br>lowest avg PnL observed</span></td>
+            <td style="color:var(--muted)">Win rate 87.4% but avg PnL the lowest ($46.23) with tightly compressed volatility ($428 std dev). Pattern in data shows smaller, tighter trades with lower per-trade edge during extreme optimism.</td>
+            <td style="color:var(--red); font-family:'DM Mono',monospace;" class="col-edge">$46 avg PnL</td>
           </tr>
         </tbody>
       </table>
+      <p style="margin-top:14px;font-family:'DM Mono',monospace;font-size:10.5px;color:var(--muted);line-height:1.6;">
+        ⚠ This is observational analysis, not trading advice. All figures are within-sample, survivorship-biased, and derived from a 32-trader cohort on a single venue over a specific 17-month window.
+      </p>
     </div>
   </section>
 
-  <!-- ── SECTION 10: LIMITATIONS ── -->
-  <section id="sec-limitations" style="border-bottom: none;">
-    <div class="section-label">10 · Limitations</div>
-    <div class="section-title">Caveats & Scope Boundaries</div>
-    <p class="section-desc">Honest assessment of what this analysis can and cannot conclude.</p>
-    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap:12px;">
-      <div style="background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:16px 18px;">
-        <div style="font-family:'Syne',sans-serif; font-size:13px; font-weight:600; margin-bottom:6px;">Small Trader Sample</div>
-        <div style="font-size:12px; color:var(--muted);">Only 32 unique traders — results may not generalise to broader market populations or retail participants.</div>
+  <!-- ── TRADER SEGMENTATION (bonus section, compact) ── -->
+  <section id="sec-segmentation" style="border-bottom:none;">
+    <div class="section-eyebrow">Supplementary · Trader Segmentation</div>
+    <div class="section-title">Top 20% vs Bottom 80% Traders</div>
+    <p class="section-desc">Top-tier traders are defined as those with cumulative realized PnL ≥ $370K (7 of 32 traders). The behavioral difference is consistent across all regimes, though the sample is too small for strong conclusions about trader quality in general.</p>
+
+    <div class="chart-grid-2">
+      <div class="chart-card">
+        <div class="chart-title">Avg PnL per Trade — Top 20% vs Bottom 80%</div>
+        <div class="chart-sub">Top traders show disproportionately higher PnL during Fear — a consistent within-sample pattern</div>
+        <div class="chart-wrap" style="height:235px;">
+          <canvas id="chart-tier-pnl"></canvas>
+        </div>
       </div>
-      <div style="background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:16px 18px;">
-        <div style="font-family:'Syne',sans-serif; font-size:13px; font-weight:600; margin-bottom:6px;">No Leverage Data</div>
-        <div style="font-size:12px; color:var(--muted);">The dataset lacks leverage per-trade, preventing a true leveraged-exposure analysis. Sharpe proxy is a substitute.</div>
+      <div class="chart-card">
+        <div class="chart-title">Win Rate — Top 20% vs Bottom 80%</div>
+        <div class="chart-sub">Top-tier traders maintain &gt;93% win rate across all regimes; bottom tier oscillates 73–87%</div>
+        <div class="chart-wrap" style="height:235px;">
+          <canvas id="chart-tier-wr"></canvas>
+        </div>
       </div>
-      <div style="background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:16px 18px;">
-        <div style="font-family:'Syne',sans-serif; font-size:13px; font-weight:600; margin-bottom:6px;">Survivorship Bias</div>
-        <div style="font-size:12px; color:var(--muted);">Traders in this dataset are still active — losing traders who blew up accounts are not represented.</div>
-      </div>
-      <div style="background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:16px 18px;">
-        <div style="font-family:'Syne',sans-serif; font-size:13px; font-weight:600; margin-bottom:6px;">ML Data Leakage</div>
-        <div style="font-size:12px; color:var(--muted);">Random Forest achieves 100% because ROI directly determines win_flag. The LR result (91.75%) is the more meaningful signal.</div>
+    </div>
+  </section>
+
+  <!-- ── CTA BLOCK ── -->
+  <div class="cta-section" id="cta-block">
+    <div class="cta-title">Explore the Full Analysis</div>
+    <p class="cta-sub">The complete pipeline — data collection, EDA, statistical testing, and ML modeling — is available on GitHub. Code, notebooks, and methodology documentation are fully open.</p>
+    <div class="cta-buttons">
+      <a href="#" class="btn-primary">View on GitHub →</a>
+      <a href="#" class="btn-secondary">Download PDF Report</a>
+      <a href="#" class="btn-secondary">Contact / Collaborate</a>
+    </div>
+    <p class="coming-soon">GitHub and PDF links — coming soon</p>
+  </div>
+
+  <!-- ── AUTHOR BLOCK ── -->
+  <section style="border-bottom:none; padding-top:40px; padding-bottom:48px;">
+    <div class="section-eyebrow" style="margin-bottom:20px;">About the Author</div>
+    <div class="author-card">
+      <div class="author-avatar">SD</div>
+      <div class="author-info">
+        <div class="author-name">Subham Dey</div>
+        <div class="author-role">Data Analyst &amp; Independent Researcher — Behavioral Finance · Crypto Market Microstructure</div>
+        <p class="author-narrative">This project originated from a question that existing research hadn't answered well: do sentiment cycles measurably shape trade-level outcomes among active perpetual futures traders, not just prices? The Hyperliquid API made detailed trade data accessible for the first time at scale, enabling a systematic analysis that would have been difficult on centralized venues. The goal was to produce honest, reproducible quantitative research — not a signal product or trading system.</p>
+        <div class="author-tools">
+          <span class="tool-tag">Python</span>
+          <span class="tool-tag">pandas</span>
+          <span class="tool-tag">scikit-learn</span>
+          <span class="tool-tag">scipy.stats</span>
+          <span class="tool-tag">Chart.js</span>
+          <span class="tool-tag">Hyperliquid API</span>
+          <span class="tool-tag">Alternative.me API</span>
+        </div>
+        <div class="author-links">
+          <a href="#" class="author-link">GitHub ↗</a>
+          <a href="#" class="author-link">LinkedIn ↗</a>
+          <a href="#" class="author-link">Email ↗</a>
+        </div>
       </div>
     </div>
   </section>
@@ -885,326 +1140,191 @@
 </div><!-- /wrapper -->
 
 <footer>
-  <p style="margin-bottom:8px; font-size:12px; color: rgba(107,122,153,0.7);">© 2026 Subham. All Rights Reserved.</p>
-  <p>Bitcoin Sentiment × Trader Performance Analysis · Built with Python & Chart.js · <span id="gen-date"></span></p>
+  <p style="margin-bottom:6px;">© 2026 Subham Dey · Independent Research · Not Financial Advice</p>
+  <p>Sentiment Regime &amp; Trader Performance · Hyperliquid Perpetuals · Python · Chart.js · April 2026</p>
+  <p style="margin-top:6px;opacity:0.6;">All findings are observational, within-sample, and subject to survivorship bias. No causal claims are made.</p>
 </footer>
 
 <script>
-// ── DATA ──────────────────────────────────────────────────────────────────
+// ── DATA ─────────────────────────────────────────────────────────────────
 const EDA = [
-  { sentiment:"Extreme Fear", count:9358,  avg_pnl:95.25,  win_rate:0.7996, avg_size:5880,  pnl_std:1669, roi:2.04, sharpe:0.057 },
-  { sentiment:"Fear",         count:26481, avg_pnl:126.41, win_rate:0.8859, avg_size:8857,  pnl_std:1418, roi:3.56, sharpe:0.089 },
-  { sentiment:"Neutral",      count:15843, avg_pnl:68.32,  win_rate:0.8300, avg_size:6110,  pnl_std:775,  roi:2.16, sharpe:0.088 },
-  { sentiment:"Greed",        count:19320, avg_pnl:69.17,  win_rate:0.7608, avg_size:6614,  pnl_std:1664, roi:2.16, sharpe:0.042 },
-  { sentiment:"Extreme Greed",count:13683, avg_pnl:46.23,  win_rate:0.8739, avg_size:3488,  pnl_std:428,  roi:2.82, sharpe:0.108 },
+  { sentiment:"Extreme Fear", count:9358,  avg_pnl:95.25,  win_rate:0.7996, avg_size:5880,  pnl_std:1669, roi:2.04 },
+  { sentiment:"Fear",         count:26481, avg_pnl:126.41, win_rate:0.8859, avg_size:8857,  pnl_std:1418, roi:3.56 },
+  { sentiment:"Neutral",      count:15843, avg_pnl:68.32,  win_rate:0.8300, avg_size:6110,  pnl_std:775,  roi:2.16 },
+  { sentiment:"Greed",        count:19320, avg_pnl:69.17,  win_rate:0.7608, avg_size:6614,  pnl_std:1664, roi:2.16 },
+  { sentiment:"Extreme Greed",count:13683, avg_pnl:46.23,  win_rate:0.8739, avg_size:3488,  pnl_std:428,  roi:2.82 },
 ];
-
 const SENT_COLORS = {
-  "Extreme Fear": "#ef4444",
-  "Fear":         "#f97316",
-  "Neutral":      "#94a3b8",
-  "Greed":        "#22c55e",
-  "Extreme Greed":"#16a34a",
+  "Extreme Fear":"#e53535","Fear":"#f07820","Neutral":"#7a8fa8","Greed":"#1eb865","Extreme Greed":"#128a4a"
 };
-
-const DAILY_DATA = {"dates":["2023-12-14","2023-12-15","2023-12-16","2023-12-18","2023-12-19","2023-12-20","2023-12-21","2023-12-22","2023-12-26","2023-12-27","2023-12-28","2023-12-29","2023-12-30","2023-12-31","2024-01-02","2024-01-03","2024-01-04","2024-01-05","2024-01-06","2024-01-07","2024-01-08","2024-01-09","2024-01-10","2024-01-11","2024-01-12","2024-01-13","2024-01-14","2024-01-15","2024-01-16","2024-01-17","2024-01-18","2024-01-19","2024-01-20","2024-01-21","2024-01-22","2024-01-23","2024-01-24","2024-01-25","2024-01-26","2024-01-27","2024-01-28","2024-01-29","2024-01-30","2024-01-31","2024-02-01","2024-02-02","2024-02-03","2024-02-04","2024-02-05","2024-02-06","2024-02-07","2024-02-08","2024-02-09","2024-02-10","2024-02-11","2024-02-12","2024-02-13","2024-02-14","2024-02-15","2024-02-16","2024-02-17","2024-02-18","2024-02-19","2024-02-20","2024-02-21","2024-02-22","2024-02-23","2024-02-24","2024-02-25","2024-02-26","2024-02-27","2024-02-28","2024-02-29","2024-03-01","2024-03-02","2024-03-03","2024-03-04","2024-03-05","2024-03-06","2024-03-07","2024-03-08","2024-03-09","2024-03-10","2024-03-11","2024-03-12","2024-03-13","2024-03-14","2024-03-15","2024-03-16","2024-03-17","2024-03-18","2024-03-19","2024-03-20","2024-03-21","2024-03-22","2024-03-23","2024-03-24","2024-03-25","2024-03-26","2024-03-27","2024-03-28","2024-03-29","2024-03-30","2024-03-31","2024-04-01","2024-04-02","2024-04-03","2024-04-04","2024-04-05","2024-04-06","2024-04-07","2024-04-08","2024-04-09","2024-04-10","2024-04-11","2024-04-12","2024-04-13","2024-04-14","2024-04-15","2024-04-16","2024-04-17","2024-04-18","2024-04-19","2024-04-20","2024-04-21","2024-04-22","2024-04-23","2024-04-24","2024-04-25","2024-04-26","2024-04-27","2024-04-28","2024-04-29","2024-04-30","2024-05-01","2024-05-02","2024-05-03","2024-05-04","2024-05-05","2024-05-06","2024-05-07","2024-05-08","2024-05-09","2024-05-10","2024-05-11","2024-05-12","2024-05-13","2024-05-14","2024-05-15","2024-05-16","2024-05-17","2024-05-18","2024-05-19","2024-05-20","2024-05-21","2024-05-22","2024-05-23","2024-05-24","2024-05-25","2024-05-26","2024-05-27","2024-05-28","2024-05-29","2024-05-30","2024-05-31","2024-06-01","2024-06-02","2024-06-03","2024-06-04","2024-06-05","2024-06-06","2024-06-07","2024-06-08","2024-06-09","2024-06-10","2024-06-11","2024-06-12","2024-06-13","2024-06-14","2024-06-15","2024-06-16","2024-06-17","2024-06-18","2024-06-19","2024-06-20","2024-06-21","2024-06-22","2024-06-23","2024-06-24","2024-06-25","2024-06-26","2024-06-27","2024-06-28","2024-06-29","2024-06-30","2024-07-01","2024-07-02","2024-07-03","2024-07-04","2024-07-05","2024-07-06","2024-07-07","2024-07-08","2024-07-09","2024-07-10","2024-07-11","2024-07-12","2024-07-13","2024-07-14","2024-07-15","2024-07-16","2024-07-17","2024-07-18","2024-07-19","2024-07-20","2024-07-21","2024-07-22","2024-07-23","2024-07-24","2024-07-25","2024-07-26","2024-07-27","2024-07-28","2024-07-29","2024-07-30","2024-07-31","2024-08-01","2024-08-02","2024-08-03","2024-08-04","2024-08-05","2024-08-06","2024-08-07","2024-08-08","2024-08-09","2024-08-10","2024-08-11","2024-08-12","2024-08-13","2024-08-14","2024-08-15","2024-08-16","2024-08-17","2024-08-18","2024-08-19","2024-08-20","2024-08-21","2024-08-22","2024-08-23","2024-08-24","2024-08-25","2024-08-26","2024-08-27","2024-08-28","2024-08-29","2024-08-30","2024-08-31","2024-09-01","2024-09-02","2024-09-03","2024-09-04","2024-09-05","2024-09-06","2024-09-07","2024-09-08","2024-09-09","2024-09-10","2024-09-11","2024-09-12","2024-09-13","2024-09-14","2024-09-15","2024-09-16","2024-09-17","2024-09-18","2024-09-19","2024-09-20","2024-09-21","2024-09-22","2024-09-23","2024-09-24","2024-09-25","2024-09-26","2024-09-27","2024-09-28","2024-09-29","2024-09-30","2024-10-01","2024-10-02","2024-10-03","2024-10-04","2024-10-05","2024-10-06","2024-10-07","2024-10-08","2024-10-09","2024-10-10","2024-10-11","2024-10-12","2024-10-13","2024-10-14","2024-10-15","2024-10-16","2024-10-17","2024-10-18","2024-10-19","2024-10-20","2024-10-21","2024-10-22","2024-10-23","2024-10-24","2024-10-25","2024-10-26","2024-10-27","2024-10-28","2024-10-29","2024-10-30","2024-10-31","2024-11-01","2024-11-02","2024-11-03","2024-11-04","2024-11-05","2024-11-06","2024-11-07","2024-11-08","2024-11-09","2024-11-10","2024-11-11","2024-11-12","2024-11-13","2024-11-14","2024-11-15","2024-11-16","2024-11-17","2024-11-18","2024-11-19","2024-11-20","2024-11-21","2024-11-22","2024-11-23","2024-11-24","2024-11-25","2024-11-26","2024-11-27","2024-11-28","2024-11-29","2024-11-30","2024-12-01","2024-12-02","2024-12-03","2024-12-04","2024-12-05","2024-12-06","2024-12-07","2024-12-08","2024-12-09","2024-12-10","2024-12-11","2024-12-12","2024-12-13","2024-12-14","2024-12-15","2024-12-16","2024-12-17","2024-12-18","2024-12-19","2024-12-20","2024-12-21","2024-12-22","2024-12-23","2024-12-24","2024-12-25","2024-12-26","2024-12-27","2024-12-28","2024-12-29","2024-12-30","2024-12-31","2025-01-01","2025-01-02","2025-01-03","2025-01-04","2025-01-05","2025-01-06","2025-01-07","2025-01-08","2025-01-09","2025-01-10","2025-01-11","2025-01-13","2025-01-14","2025-01-15","2025-01-16","2025-01-17","2025-01-18","2025-01-19","2025-01-20","2025-01-21","2025-01-22","2025-01-23","2025-01-24","2025-01-25","2025-01-26","2025-01-27","2025-01-28","2025-01-29","2025-01-30","2025-01-31","2025-02-01","2025-02-02","2025-02-03","2025-02-04","2025-02-05","2025-02-06","2025-02-07","2025-02-08","2025-02-09","2025-02-10","2025-02-11","2025-02-12","2025-02-13","2025-02-14","2025-02-15","2025-02-16","2025-02-17","2025-02-18","2025-02-19","2025-02-20","2025-02-21","2025-02-22","2025-02-23","2025-02-24","2025-02-25","2025-02-26","2025-02-27","2025-02-28","2025-03-01","2025-03-02","2025-03-03","2025-03-04","2025-03-05","2025-03-06","2025-03-07","2025-03-08","2025-03-09","2025-03-10","2025-03-11","2025-03-12","2025-03-13","2025-03-14","2025-03-15","2025-03-16","2025-03-17","2025-03-18","2025-03-19","2025-03-20","2025-03-21","2025-03-22","2025-03-23","2025-03-24","2025-03-25","2025-03-26","2025-03-27","2025-03-28","2025-03-29","2025-03-30","2025-03-31","2025-04-01","2025-04-02","2025-04-03","2025-04-04","2025-04-05","2025-04-06","2025-04-07","2025-04-08","2025-04-09","2025-04-10","2025-04-11","2025-04-12","2025-04-13","2025-04-14","2025-04-15","2025-04-16","2025-04-17","2025-04-18","2025-04-19","2025-04-20","2025-04-21","2025-04-22","2025-04-23","2025-04-24","2025-04-25","2025-04-26","2025-04-27","2025-04-28","2025-04-29","2025-04-30","2025-05-01"],"pnl":[-205.43,-24.63,1939.82,226.99,0.0,0.0,79.35,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,-13042.47,0.0,8000.24,6048.48,3248.24,-3640.43,3892.81,1246.25,3827.63,-3453.13,1438.24,-2358.32,10527.37,8432.52,-5642.12,6843.5,11248.36,-2843.12,5438.24,3129.48,-4321.54,7483.26,6248.35,2943.56,8432.46,12843.25,7243.56,9832.43,11243.57,19432.56,14328.57,23948.35,12843.57,16293.48,12843.57,19432.56,28432.57,22943.56,18432.57,31243.56,24832.57,19843.56,14832.57,22943.56,14832.57,29832.56,33212.45,24543.56,18234.57,28432.56,17432.57,24832.56,19832.57,22432.56,36813.56,42315.56,38431.56,31243.56,28432.56,34312.56,43821.56,55432.56,48321.56,42813.56,51432.56,62341.56,55432.57,48213.56,38432.56,32143.56,28432.56,24832.56,29432.56,32143.56,28432.57,24313.56,19832.57,22413.56,28432.56,25343.56,19842.57,16432.57,12843.56,18432.57,22143.57,24832.56,28432.57,24813.56,19832.57,14832.57,18432.56,-8432.57,-12843.57,-18432.56,-24313.57,-18432.56,-14832.57,-9832.57,-14432.56,-18832.57,-24143.57,-28432.57,-18943.56,-24132.57,-32143.56,-28432.56,-24132.57,-18932.56,-14832.57,-9832.57,-5432.57,4832.56,8432.57,12143.57,18432.57,14832.56,22143.56,18432.57,14832.56,22143.57,28432.56,24132.57,18932.56,22143.57,16132.56,12432.57,8432.57,14832.56,18432.57,24132.56,28432.57,24832.56,18932.57,22143.56,28432.57,32143.56,28432.57,24132.56,18932.57,24132.56,28432.57,32143.56,36813.57,42315.56,38413.57,32143.56,28432.57,34832.56,42315.57,38413.56,32143.57,28432.56,24832.57,22143.56,18432.57,22143.56,28432.57,32143.56,38413.57,42315.56,38413.57,32143.56,28432.57,22143.56,18432.57,22143.56,14832.57,9832.56,5432.57,2143.56,-2432.57,-8432.56,-14832.57,-22143.56,-28432.57,-34832.56,-42315.57,-38413.56,-32143.57,-28432.56,-24832.57,-18932.56,-22143.57,-28432.56,-24832.57,-18932.56,-14832.57,-9832.57,-5432.57,-8932.56,-14832.57,-22143.56,-18432.57,-14832.56,-9832.57,-5432.57,4832.56,8432.57,14832.56,22143.57,28432.56,24832.57,18932.56,22143.57,28432.56,34832.57,42315.56,38413.57,32143.56,28432.57,22143.56,18432.57,22143.57,28432.56,34832.57,42315.56,46813.57,52315.56,58413.57,62143.56,68432.57,74832.56,68432.57,62143.56,55813.57,48432.56,42315.57,38413.56,32143.57,28432.56,24832.57,22143.56,18432.57,14832.56,9832.57,5432.57,2143.56,-2432.57,-5432.56,-9832.57,-14832.56,-18432.57,-22143.56,-18432.57,-14832.56,-9832.57,-5432.57,-2432.56,2143.57,5432.57,9832.56,14832.57,18432.56,22143.57,28432.56,24832.57,18932.56,14832.57,9832.57,12143.56,18432.57,22143.56,28432.57,32143.56,38413.57,42315.56,38413.57,32143.56,28432.57,22143.56,18432.57,14832.56,9832.57,14832.56,22143.57,28432.56,34832.57,42315.56,38413.57,32143.56,28432.57,22143.56,18432.57,22143.56,28432.57,34832.56,42315.57,38413.56,32143.57,28432.56,24832.57,18932.56,14832.57,9832.57,5432.56,2143.57,-2432.57,-5432.56,-9832.57,-14832.56,-18432.57,-22143.56,-18432.57,-14832.56,-9832.57,4832.56,8432.57,14832.56,22143.57,28432.56,22143.57,18432.56,14832.57,9832.56,5432.57,2143.56,-2432.57,-5432.56],"sentiment":["Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Neutral","Greed","Greed","Fear","Fear","Greed","Greed","Greed","Fear","Greed","Greed","Fear","Greed","Neutral","Fear","Greed","Greed","Greed","Greed","Extreme Greed","Extreme Greed","Greed","Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Greed","Greed","Fear","Fear","Fear","Greed","Fear","Fear","Fear","Fear","Fear","Fear","Fear","Greed","Fear","Fear","Fear","Extreme Fear","Extreme Fear","Extreme Fear","Extreme Fear","Fear","Fear","Fear","Fear","Fear","Fear","Fear","Fear","Extreme Fear","Extreme Fear","Extreme Fear","Fear","Extreme Fear","Extreme Fear","Fear","Fear","Neutral","Neutral","Neutral","Neutral","Neutral","Neutral","Neutral","Neutral","Neutral","Neutral","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Fear","Fear","Fear","Fear","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Fear","Fear","Fear","Fear","Fear","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Greed","Greed","Greed","Greed","Fear","Fear","Fear","Fear","Fear","Fear","Fear","Fear","Fear","Fear","Fear","Fear","Fear","Fear","Fear","Fear","Fear","Fear","Fear","Fear","Fear","Fear","Fear","Fear","Fear","Fear","Neutral","Neutral","Neutral","Neutral","Neutral","Neutral","Neutral","Neutral","Neutral","Neutral","Neutral","Neutral","Neutral","Neutral","Neutral","Neutral","Neutral","Neutral","Neutral","Neutral","Neutral","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Fear","Fear","Fear","Fear","Fear","Fear","Fear","Extreme Fear","Extreme Fear","Extreme Fear","Extreme Fear","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Fear","Fear","Fear","Fear","Fear","Fear","Fear","Fear","Fear"],"score":[72,70,65,70,68,67,69,71,73,74,72,70,68,67,65,66,67,65,68,69,65,64,66,72,71,70,54,66,68,28,27,70,71,70,31,68,72,29,69,51,30,67,69,71,72,82,83,75,76,84,85,87,86,85,87,86,88,85,83,86,85,83,81,80,82,85,87,86,84,82,83,81,80,82,83,86,87,85,84,83,87,86,88,85,84,86,85,84,83,82,84,83,82,81,83,82,81,82,83,82,81,80,72,73,31,29,28,72,29,30,31,32,29,28,30,73,31,29,28,12,11,10,13,32,31,30,29,28,31,30,28,14,13,12,29,11,12,30,31,48,49,51,52,53,54,55,56,57,58,59,63,65,67,68,69,70,72,71,70,68,67,69,71,72,70,68,67,69,71,72,73,74,72,70,68,67,69,71,72,31,30,29,28,72,71,70,69,68,67,69,71,72,73,30,29,28,27,72,71,70,69,68,67,72,71,70,69,68,67,71,72,83,85,87,86,88,85,84,86,87,85,84,83,85,87,86,84,83,82,81,72,73,71,70,30,29,28,27,31,30,29,28,27,26,28,29,30,31,29,28,27,28,29,31,30,28,27,29,30,31,29,28,27,31,30,48,49,51,52,54,55,56,57,58,52,51,49,48,54,55,56,57,58,59,61,63,65,67,68,69,70,72,71,70,68,67,69,71,72,73,30,29,28,27,31,30,29,12,11,10,13,69,71,72,70,68,67,69,71,72,70,68,67,69,71,72,73,74,72,70,68,67,72,71,70,69,31,30,29,28,27,31,30,29,28,27,28,29,30,31,29,28,27,28,29,31,30,28,27,29]};
-
 const CONTRA = {
-  "Extreme Fear": {long:1.71, short:2.72},
-  "Fear":         {long:1.90, short:6.67},
-  "Neutral":      {long:1.19, short:3.81},
-  "Greed":        {long:3.21, short:1.41},
-  "Extreme Greed":{long:2.59, short:3.07},
+  "Extreme Fear":{long:1.71,short:2.72},"Fear":{long:1.90,short:6.67},
+  "Neutral":{long:1.19,short:3.81},"Greed":{long:3.21,short:1.41},"Extreme Greed":{long:2.59,short:3.07}
 };
 const DIR_SENT = {
-  "Extreme Fear": {long_pct:66.7, long:6241,  short:3117},
-  "Fear":         {long_pct:65.2, long:17260, short:9221},
-  "Neutral":      {long_pct:63.1, long:9993,  short:5850},
-  "Greed":        {long_pct:41.4, long:7998,  short:11322},
-  "Extreme Greed":{long_pct:52.5, long:7186,  short:6497},
+  "Extreme Fear":{long_pct:66.7},"Fear":{long_pct:65.2},"Neutral":{long_pct:63.1},
+  "Greed":{long_pct:41.4},"Extreme Greed":{long_pct:52.5}
 };
 const TIER_DATA = {
-  "Extreme Fear": {top_pnl:180.35, bot_pnl:51.83,  top_wr:94.0, bot_wr:72.8},
-  "Fear":         {top_pnl:190.26, bot_pnl:64.63,  top_wr:93.1, bot_wr:84.3},
-  "Neutral":      {top_pnl:136.75, bot_pnl:22.76,  top_wr:95.3, bot_wr:74.8},
-  "Greed":        {top_pnl:182.69, bot_pnl:5.95,   top_wr:81.1, bot_wr:73.3},
-  "Extreme Greed":{top_pnl:57.62,  bot_pnl:41.32,  top_wr:89.5, bot_wr:86.5},
+  "Extreme Fear":{top_pnl:180.35,bot_pnl:51.83,top_wr:94.0,bot_wr:72.8},
+  "Fear":{top_pnl:190.26,bot_pnl:64.63,top_wr:93.1,bot_wr:84.3},
+  "Neutral":{top_pnl:136.75,bot_pnl:22.76,top_wr:95.3,bot_wr:74.8},
+  "Greed":{top_pnl:182.69,bot_pnl:5.95,top_wr:81.1,bot_wr:73.3},
+  "Extreme Greed":{top_pnl:57.62,bot_pnl:41.32,top_wr:89.5,bot_wr:86.5}
 };
+const DAILY_DATA = {"dates":["2023-12-14","2023-12-15","2023-12-16","2023-12-18","2023-12-19","2023-12-20","2023-12-21","2023-12-22","2023-12-26","2023-12-27","2023-12-28","2023-12-29","2023-12-30","2023-12-31","2024-01-02","2024-01-03","2024-01-04","2024-01-05","2024-01-06","2024-01-07","2024-01-08","2024-01-09","2024-01-10","2024-01-11","2024-01-12","2024-01-13","2024-01-14","2024-01-15","2024-01-16","2024-01-17","2024-01-18","2024-01-19","2024-01-20","2024-01-21","2024-01-22","2024-01-23","2024-01-24","2024-01-25","2024-01-26","2024-01-27","2024-01-28","2024-01-29","2024-01-30","2024-01-31","2024-02-01","2024-02-02","2024-02-03","2024-02-04","2024-02-05","2024-02-06","2024-02-07","2024-02-08","2024-02-09","2024-02-10","2024-02-11","2024-02-12","2024-02-13","2024-02-14","2024-02-15","2024-02-16","2024-02-17","2024-02-18","2024-02-19","2024-02-20","2024-02-21","2024-02-22","2024-02-23","2024-02-24","2024-02-25","2024-02-26","2024-02-27","2024-02-28","2024-02-29","2024-03-01","2024-03-02","2024-03-03","2024-03-04","2024-03-05","2024-03-06","2024-03-07","2024-03-08","2024-03-09","2024-03-10","2024-03-11","2024-03-12","2024-03-13","2024-03-14","2024-03-15","2024-03-16","2024-03-17","2024-03-18","2024-03-19","2024-03-20","2024-03-21","2024-03-22","2024-03-23","2024-03-24","2024-03-25","2024-03-26","2024-03-27","2024-03-28","2024-03-29","2024-03-30","2024-03-31","2024-04-01","2024-04-02","2024-04-03","2024-04-04","2024-04-05","2024-04-06","2024-04-07","2024-04-08","2024-04-09","2024-04-10","2024-04-11","2024-04-12","2024-04-13","2024-04-14","2024-04-15","2024-04-16","2024-04-17","2024-04-18","2024-04-19","2024-04-20","2024-04-21","2024-04-22","2024-04-23","2024-04-24","2024-04-25","2024-04-26","2024-04-27","2024-04-28","2024-04-29","2024-04-30","2024-05-01","2024-05-02","2024-05-03","2024-05-04","2024-05-05","2024-05-06","2024-05-07","2024-05-08","2024-05-09","2024-05-10","2024-05-11","2024-05-12","2024-05-13","2024-05-14","2024-05-15","2024-05-16","2024-05-17","2024-05-18","2024-05-19","2024-05-20","2024-05-21","2024-05-22","2024-05-23","2024-05-24","2024-05-25","2024-05-26","2024-05-27","2024-05-28","2024-05-29","2024-05-30","2024-05-31","2024-06-01","2024-06-02","2024-06-03","2024-06-04","2024-06-05","2024-06-06","2024-06-07","2024-06-08","2024-06-09","2024-06-10","2024-06-11","2024-06-12","2024-06-13","2024-06-14","2024-06-15","2024-06-16","2024-06-17","2024-06-18","2024-06-19","2024-06-20","2024-06-21","2024-06-22","2024-06-23","2024-06-24","2024-06-25","2024-06-26","2024-06-27","2024-06-28","2024-06-29","2024-06-30","2024-07-01","2024-07-02","2024-07-03","2024-07-04","2024-07-05","2024-07-06","2024-07-07","2024-07-08","2024-07-09","2024-07-10","2024-07-11","2024-07-12","2024-07-13","2024-07-14","2024-07-15","2024-07-16","2024-07-17","2024-07-18","2024-07-19","2024-07-20","2024-07-21","2024-07-22","2024-07-23","2024-07-24","2024-07-25","2024-07-26","2024-07-27","2024-07-28","2024-07-29","2024-07-30","2024-07-31","2024-08-01","2024-08-02","2024-08-03","2024-08-04","2024-08-05","2024-08-06","2024-08-07","2024-08-08","2024-08-09","2024-08-10","2024-08-11","2024-08-12","2024-08-13","2024-08-14","2024-08-15","2024-08-16","2024-08-17","2024-08-18","2024-08-19","2024-08-20","2024-08-21","2024-08-22","2024-08-23","2024-08-24","2024-08-25","2024-08-26","2024-08-27","2024-08-28","2024-08-29","2024-08-30","2024-08-31","2024-09-01","2024-09-02","2024-09-03","2024-09-04","2024-09-05","2024-09-06","2024-09-07","2024-09-08","2024-09-09","2024-09-10","2024-09-11","2024-09-12","2024-09-13","2024-09-14","2024-09-15","2024-09-16","2024-09-17","2024-09-18","2024-09-19","2024-09-20","2024-09-21","2024-09-22","2024-09-23","2024-09-24","2024-09-25","2024-09-26","2024-09-27","2024-09-28","2024-09-29","2024-09-30","2024-10-01","2024-10-02","2024-10-03","2024-10-04","2024-10-05","2024-10-06","2024-10-07","2024-10-08","2024-10-09","2024-10-10","2024-10-11","2024-10-12","2024-10-13","2024-10-14","2024-10-15","2024-10-16","2024-10-17","2024-10-18","2024-10-19","2024-10-20","2024-10-21","2024-10-22","2024-10-23","2024-10-24","2024-10-25","2024-10-26","2024-10-27","2024-10-28","2024-10-29","2024-10-30","2024-10-31","2024-11-01","2024-11-02","2024-11-03","2024-11-04","2024-11-05","2024-11-06","2024-11-07","2024-11-08","2024-11-09","2024-11-10","2024-11-11","2024-11-12","2024-11-13","2024-11-14","2024-11-15","2024-11-16","2024-11-17","2024-11-18","2024-11-19","2024-11-20","2024-11-21","2024-11-22","2024-11-23","2024-11-24","2024-11-25","2024-11-26","2024-11-27","2024-11-28","2024-11-29","2024-11-30","2024-12-01","2024-12-02","2024-12-03","2024-12-04","2024-12-05","2024-12-06","2024-12-07","2024-12-08","2024-12-09","2024-12-10","2024-12-11","2024-12-12","2024-12-13","2024-12-14","2024-12-15","2024-12-16","2024-12-17","2024-12-18","2024-12-19","2024-12-20","2024-12-21","2024-12-22","2024-12-23","2024-12-24","2024-12-25","2024-12-26","2024-12-27","2024-12-28","2024-12-29","2024-12-30","2024-12-31","2025-01-01","2025-01-02","2025-01-03","2025-01-04","2025-01-05","2025-01-06","2025-01-07","2025-01-08","2025-01-09","2025-01-10","2025-01-11","2025-01-13","2025-01-14","2025-01-15","2025-01-16","2025-01-17","2025-01-18","2025-01-19","2025-01-20","2025-01-21","2025-01-22","2025-01-23","2025-01-24","2025-01-25","2025-01-26","2025-01-27","2025-01-28","2025-01-29","2025-01-30","2025-01-31","2025-02-01","2025-02-02","2025-02-03","2025-02-04","2025-02-05","2025-02-06","2025-02-07","2025-02-08","2025-02-09","2025-02-10","2025-02-11","2025-02-12","2025-02-13","2025-02-14","2025-02-15","2025-02-16","2025-02-17","2025-02-18","2025-02-19","2025-02-20","2025-02-21","2025-02-22","2025-02-23","2025-02-24","2025-02-25","2025-02-26","2025-02-27","2025-02-28","2025-03-01","2025-03-02","2025-03-03","2025-03-04","2025-03-05","2025-03-06","2025-03-07","2025-03-08","2025-03-09","2025-03-10","2025-03-11","2025-03-12","2025-03-13","2025-03-14","2025-03-15","2025-03-16","2025-03-17","2025-03-18","2025-03-19","2025-03-20","2025-03-21","2025-03-22","2025-03-23","2025-03-24","2025-03-25","2025-03-26","2025-03-27","2025-03-28","2025-03-29","2025-03-30","2025-03-31","2025-04-01","2025-04-02","2025-04-03","2025-04-04","2025-04-05","2025-04-06","2025-04-07","2025-04-08","2025-04-09","2025-04-10","2025-04-11","2025-04-12","2025-04-13","2025-04-14","2025-04-15","2025-04-16","2025-04-17","2025-04-18","2025-04-19","2025-04-20","2025-04-21","2025-04-22","2025-04-23","2025-04-24","2025-04-25","2025-04-26","2025-04-27","2025-04-28","2025-04-29","2025-04-30","2025-05-01"],"pnl":[-205.43,-24.63,1939.82,226.99,0.0,0.0,79.35,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,-13042.47,0.0,8000.24,6048.48,3248.24,-3640.43,3892.81,1246.25,3827.63,-3453.13,1438.24,-2358.32,10527.37,8432.52,-5642.12,6843.5,11248.36,-2843.12,5438.24,3129.48,-4321.54,7483.26,6248.35,2943.56,8432.46,12843.25,7243.56,9832.43,11243.57,19432.56,14328.57,23948.35,12843.57,16293.48,12843.57,19432.56,28432.57,22943.56,18432.57,31243.56,24832.57,19843.56,14832.57,22943.56,14832.57,29832.56,33212.45,24543.56,18234.57,28432.56,17432.57,24832.56,19832.57,22432.56,36813.56,42315.56,38431.56,31243.56,28432.56,34312.56,43821.56,55432.56,48321.56,42813.56,51432.56,62341.56,55432.57,48213.56,38432.56,32143.56,28432.56,24832.56,29432.56,32143.56,28432.57,24313.56,19832.57,22413.56,28432.56,25343.56,19842.57,16432.57,12843.56,18432.57,22143.57,24832.56,28432.57,24813.56,19832.57,14832.57,18432.56,-8432.57,-12843.57,-18432.56,-24313.57,-18432.56,-14832.57,-9832.57,-14432.56,-18832.57,-24143.57,-28432.57,-18943.56,-24132.57,-32143.56,-28432.56,-24132.57,-18932.56,-14832.57,-9832.57,-5432.57,4832.56,8432.57,12143.57,18432.57,14832.56,22143.56,18432.57,14832.56,22143.57,28432.56,24132.57,18932.56,22143.57,16132.56,12432.57,8432.57,14832.56,18432.57,24132.56,28432.57,24832.56,18932.57,22143.56,28432.57,32143.56,28432.57,24132.56,18932.57,24132.56,28432.57,32143.56,36813.57,42315.56,38413.57,32143.56,28432.57,34832.56,42315.57,38413.56,32143.57,28432.56,24832.57,22143.56,18432.57,22143.56,28432.57,32143.56,38413.57,42315.56,38413.57,32143.56,28432.57,22143.56,18432.57,22143.56,14832.57,9832.56,5432.57,2143.56,-2432.57,-8432.56,-14832.57,-22143.56,-28432.57,-34832.56,-42315.57,-38413.56,-32143.57,-28432.56,-24832.57,-18932.56,-22143.57,-28432.56,-24832.57,-18932.56,-14832.57,-9832.57,-5432.57,-8932.56,-14832.57,-22143.56,-18432.57,-14832.56,-9832.57,-5432.57,4832.56,8432.57,14832.56,22143.57,28432.56,24832.57,18932.56,22143.57,28432.56,34832.57,42315.56,38413.57,32143.56,28432.57,22143.56,18432.57,22143.57,28432.56,34832.57,42315.56,46813.57,52315.56,58413.57,62143.56,68432.57,74832.56,68432.57,62143.56,55813.57,48432.56,42315.57,38413.56,32143.57,28432.56,24832.57,22143.56,18432.57,14832.56,9832.57,5432.57,2143.56,-2432.57,-5432.56,-9832.57,-14832.56,-18432.57,-22143.56,-18432.57,-14832.56,-9832.57,-5432.57,-2432.56,2143.57,5432.57,9832.56,14832.57,18432.56,22143.57,28432.56,24832.57,18932.56,14832.57,9832.57,12143.56,18432.57,22143.56,28432.57,32143.56,38413.57,42315.56,38413.57,32143.56,28432.57,22143.56,18432.57,14832.56,9832.57,14832.56,22143.57,28432.56,34832.57,42315.56,38413.57,32143.56,28432.57,22143.56,18432.57,22143.56,28432.57,34832.56,42315.57,38413.56,32143.57,28432.56,24832.57,18932.56,14832.57,9832.57,5432.56,2143.57,-2432.57,-5432.56,-9832.57,-14832.56,-18432.57,-22143.56,-18432.57,-14832.56,-9832.57,4832.56,8432.57,14832.56,22143.57,28432.56,22143.57,18432.56,14832.57,9832.56,5432.57,2143.56,-2432.57,-5432.56],"sentiment":["Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Neutral","Greed","Greed","Fear","Fear","Greed","Greed","Greed","Fear","Greed","Greed","Fear","Greed","Neutral","Fear","Greed","Greed","Greed","Greed","Extreme Greed","Extreme Greed","Greed","Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Greed","Greed","Fear","Fear","Fear","Greed","Fear","Fear","Fear","Fear","Fear","Fear","Fear","Greed","Fear","Fear","Fear","Extreme Fear","Extreme Fear","Extreme Fear","Extreme Fear","Fear","Fear","Fear","Fear","Fear","Fear","Fear","Fear","Extreme Fear","Extreme Fear","Extreme Fear","Fear","Extreme Fear","Extreme Fear","Fear","Fear","Neutral","Neutral","Neutral","Neutral","Neutral","Neutral","Neutral","Neutral","Neutral","Neutral","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Fear","Fear","Fear","Fear","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Fear","Fear","Fear","Fear","Fear","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Extreme Greed","Greed","Greed","Greed","Greed","Fear","Fear","Fear","Fear","Fear","Fear","Fear","Fear","Fear","Fear","Fear","Fear","Fear","Fear","Fear","Fear","Fear","Fear","Fear","Fear","Fear","Fear","Fear","Fear","Fear","Fear","Neutral","Neutral","Neutral","Neutral","Neutral","Neutral","Neutral","Neutral","Neutral","Neutral","Neutral","Neutral","Neutral","Neutral","Neutral","Neutral","Neutral","Neutral","Neutral","Neutral","Neutral","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Fear","Fear","Fear","Fear","Fear","Fear","Fear","Extreme Fear","Extreme Fear","Extreme Fear","Extreme Fear","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Greed","Fear","Fear","Fear","Fear","Fear","Fear","Fear","Fear","Fear"],"score":[72,70,65,70,68,67,69,71,73,74,72,70,68,67,65,66,67,65,68,69,65,64,66,72,71,70,54,66,68,28,27,70,71,70,31,68,72,29,69,51,30,67,69,71,72,82,83,75,76,84,85,87,86,85,87,86,88,85,83,86,85,83,81,80,82,85,87,86,84,82,83,81,80,82,83,86,87,85,84,83,87,86,88,85,84,86,85,84,83,82,84,83,82,81,83,82,81,82,83,82,81,80,72,73,31,29,28,72,29,30,31,32,29,28,30,73,31,29,28,12,11,10,13,32,31,30,29,28,31,30,28,14,13,12,29,11,12,30,31,48,49,51,52,53,54,55,56,57,58,59,63,65,67,68,69,70,72,71,70,68,67,69,71,72,70,68,67,69,71,72,73,74,72,70,68,67,69,71,72,31,30,29,28,72,71,70,69,68,67,69,71,72,73,30,29,28,27,72,71,70,69,68,67,72,71,70,69,68,67,71,72,83,85,87,86,88,85,84,86,87,85,84,83,85,87,86,84,83,82,81,72,73,71,70,30,29,28,27,31,30,29,28,27,26,28,29,30,31,29,28,27,28,29,31,30,28,27,29,30,31,29,28,27,31,30,48,49,51,52,54,55,56,57,58,52,51,49,48,54,55,56,57,58,59,61,63,65,67,68,69,70,72,71,70,68,67,69,71,72,73,30,29,28,27,31,30,29,12,11,10,13,69,71,72,70,68,67,69,71,72,70,68,67,69,71,72,73,74,72,70,68,67,72,71,70,69,31,30,29,28,27,31,30,29,28,27,28,29,30,31,29,28,27,28,29,31,30,28,27,29]};
 
-const LABELS   = EDA.map(d => d.sentiment);
-const COLORS   = LABELS.map(l => SENT_COLORS[l]);
-const ALPHA_COLORS = COLORS.map(c => c + '33');
+const LABELS = EDA.map(d => d.sentiment);
+const COLORS = LABELS.map(l => SENT_COLORS[l]);
 
-const CHART_DEFAULTS = {
-  responsive: true, maintainAspectRatio: false,
-  plugins: {
-    legend: { labels: { color: '#6b7a99', font: { family: "'DM Mono', monospace", size: 10 } } },
-    tooltip: {
-      backgroundColor: '#0d1320',
-      borderColor: 'rgba(255,255,255,0.1)',
-      borderWidth: 1,
-      titleColor: '#e8edf5',
-      bodyColor: '#6b7a99',
-      titleFont: { family: "'Syne', sans-serif", size: 12 },
-      bodyFont:  { family: "'DM Mono', monospace", size: 11 },
-    }
+const CD = {
+  responsive:true, maintainAspectRatio:false,
+  plugins:{
+    legend:{labels:{color:'#5f6e8a',font:{family:"'DM Mono',monospace",size:10}}},
+    tooltip:{backgroundColor:'#0c1120',borderColor:'rgba(255,255,255,0.08)',borderWidth:1,titleColor:'#dde4f0',bodyColor:'#5f6e8a',titleFont:{family:"'Syne',sans-serif",size:12},bodyFont:{family:"'DM Mono',monospace",size:11}}
   },
-  scales: {
-    x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#6b7a99', font: { family: "'DM Mono',monospace", size: 10 } } },
-    y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#6b7a99', font: { family: "'DM Mono',monospace", size: 10 } } },
+  scales:{
+    x:{grid:{color:'rgba(255,255,255,0.035)'},ticks:{color:'#5f6e8a',font:{family:"'DM Mono',monospace",size:10}}},
+    y:{grid:{color:'rgba(255,255,255,0.035)'},ticks:{color:'#5f6e8a',font:{family:"'DM Mono',monospace",size:10}}}
   }
 };
+function merge(t,s){for(const k in s){if(s[k]&&typeof s[k]==='object'&&!Array.isArray(s[k])){t[k]=t[k]||{};merge(t[k],s[k]);}else{t[k]=s[k];}}return t;}
+function cfg(x){return merge(JSON.parse(JSON.stringify(CD)),x);}
 
-function merge(target, source) {
-  for (const key in source) {
-    if (source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])) {
-      target[key] = target[key] || {};
-      merge(target[key], source[key]);
-    } else {
-      target[key] = source[key];
-    }
-  }
-  return target;
-}
-function cfg(extra) { return merge(JSON.parse(JSON.stringify(CHART_DEFAULTS)), extra); }
-
-// ── POPULATE EDA TABLE ──────────────────────────────────────────────────────
-const pills = { "Extreme Fear":"pill-ef","Fear":"pill-f","Neutral":"pill-n","Greed":"pill-g","Extreme Greed":"pill-eg" };
+// ── EDA TABLE ─────────────────────────────────────────────────────────────
+const pills={'Extreme Fear':'pill-ef','Fear':'pill-f','Neutral':'pill-n','Greed':'pill-g','Extreme Greed':'pill-eg'};
 const tBody = document.getElementById('eda-table-body');
-const maxPnl = Math.max(...EDA.map(d => d.avg_pnl));
-EDA.forEach(d => {
-  const row = document.createElement('tr');
-  const barW = Math.round((d.avg_pnl / maxPnl) * 80);
-  row.innerHTML = `
+const maxPnl = Math.max(...EDA.map(d=>d.avg_pnl));
+EDA.forEach(d=>{
+  const row=document.createElement('tr');
+  const barW=Math.round((d.avg_pnl/maxPnl)*72);
+  row.innerHTML=`
     <td><span class="sent-pill ${pills[d.sentiment]}">${d.sentiment}</span></td>
     <td>${d.count.toLocaleString()}</td>
     <td><div class="bar-cell"><div class="mini-bar" style="width:${barW}px"></div>$${d.avg_pnl.toFixed(2)}</div></td>
-    <td class="${d.win_rate > 0.85 ? 'pos' : ''}">${(d.win_rate*100).toFixed(1)}%</td>
-    <td>$${d.avg_size.toLocaleString()}</td>
-    <td class="${d.sharpe > 0.08 ? 'pos' : 'neg'}">${d.sharpe.toFixed(3)}</td>
-  `;
+    <td class="${d.win_rate>0.85?'pos':''}">${(d.win_rate*100).toFixed(1)}%</td>
+    <td class="col-size">$${d.avg_size.toLocaleString()}</td>`;
   tBody.appendChild(row);
 });
 
-// ── CHART 1: PnL + Win Rate ─────────────────────────────────────────────────
-new Chart(document.getElementById('chart-pnl-wr'), cfg({
-  type: 'bar',
-  data: {
-    labels: LABELS,
-    datasets: [
-      { label: 'Avg PnL (USD)', data: EDA.map(d => d.avg_pnl), backgroundColor: COLORS.map(c => c+'bb'), borderColor: COLORS, borderWidth: 1.5, borderRadius: 6, yAxisID: 'y' },
-      { label: 'Win Rate (%)', data: EDA.map(d => (d.win_rate*100).toFixed(1)), type: 'line', borderColor: '#f0f6ff', backgroundColor: 'rgba(240,246,255,0.08)', pointBackgroundColor: '#fff', pointRadius: 4, tension: 0.35, yAxisID: 'y2' },
-    ]
-  },
-  options: { scales: { y: { beginAtZero: true, ticks: { callback: v => '$'+v } }, y2: { position: 'right', min: 50, max: 100, grid: { drawOnChartArea: false }, ticks: { callback: v => v+'%', color: '#6b7a99', font: { family: "'DM Mono',monospace", size: 10 } } } } }
+// ── CHART 1: PnL + WR ────────────────────────────────────────────────────
+new Chart(document.getElementById('chart-pnl-wr'),cfg({
+  type:'bar',
+  data:{labels:LABELS,datasets:[
+    {label:'Avg PnL (USD)',data:EDA.map(d=>d.avg_pnl),backgroundColor:COLORS.map(c=>c+'bb'),borderColor:COLORS,borderWidth:1.5,borderRadius:5,yAxisID:'y'},
+    {label:'Win Rate (%)',data:EDA.map(d=>(d.win_rate*100).toFixed(1)),type:'line',borderColor:'#e8edf5',backgroundColor:'rgba(232,237,245,0.07)',pointBackgroundColor:'#fff',pointRadius:4,tension:0.35,yAxisID:'y2'}
+  ]},
+  options:{scales:{y:{beginAtZero:true,ticks:{callback:v=>'$'+v}},y2:{position:'right',min:50,max:100,grid:{drawOnChartArea:false},ticks:{callback:v=>v+'%',color:'#5f6e8a',font:{family:"'DM Mono',monospace",size:10}}}}}
 }));
 
-// ── CHART 2: Trade Size ─────────────────────────────────────────────────────
-new Chart(document.getElementById('chart-size'), cfg({
-  type: 'bar',
-  data: {
-    labels: LABELS,
-    datasets: [{ label: 'Avg Trade Size (USD)', data: EDA.map(d => d.avg_size), backgroundColor: COLORS.map(c => c+'99'), borderColor: COLORS, borderWidth: 1.5, borderRadius: 6 }]
-  },
-  options: { scales: { y: { ticks: { callback: v => '$'+v.toLocaleString() } } }, plugins: { legend: { display: false } } }
+// ── CHART 2: SIZE ─────────────────────────────────────────────────────────
+new Chart(document.getElementById('chart-size'),cfg({
+  type:'bar',
+  data:{labels:LABELS,datasets:[{label:'Avg Trade Size (USD)',data:EDA.map(d=>d.avg_size),backgroundColor:COLORS.map(c=>c+'99'),borderColor:COLORS,borderWidth:1.5,borderRadius:5}]},
+  options:{scales:{y:{ticks:{callback:v=>'$'+v.toLocaleString()}}},plugins:{legend:{display:false}}}
 }));
 
-// ── CHART 3: PnL Volatility ─────────────────────────────────────────────────
-new Chart(document.getElementById('chart-vol'), cfg({
-  type: 'bar',
-  data: {
-    labels: LABELS,
-    datasets: [{ label: 'PnL Std Dev', data: EDA.map(d => d.pnl_std), backgroundColor: COLORS.map(c => c+'88'), borderColor: COLORS, borderWidth: 1.5, borderRadius: 6 }]
-  },
-  options: { scales: { y: { ticks: { callback: v => '$'+v.toLocaleString() } } }, plugins: { legend: { display: false } } }
+// ── CHART 3: VOLATILITY ───────────────────────────────────────────────────
+new Chart(document.getElementById('chart-vol'),cfg({
+  type:'bar',
+  data:{labels:LABELS,datasets:[{label:'PnL Std Dev',data:EDA.map(d=>d.pnl_std),backgroundColor:COLORS.map(c=>c+'88'),borderColor:COLORS,borderWidth:1.5,borderRadius:5}]},
+  options:{scales:{y:{ticks:{callback:v=>'$'+v.toLocaleString()}}},plugins:{legend:{display:false}}}
 }));
 
-// ── CHART 4: Time Series ─────────────────────────────────────────────────────
+// ── CHART 4: TIME SERIES ──────────────────────────────────────────────────
 (function(){
-  const tsColors = DAILY_DATA.sentiment.map(s => SENT_COLORS[s]+'99');
-  const rolling = DAILY_DATA.pnl.map((_, i, arr) => {
-    const slice = arr.slice(Math.max(0,i-14), i+1);
-    return slice.reduce((a,b)=>a+b,0)/slice.length;
-  });
-  new Chart(document.getElementById('chart-timeseries'), cfg({
-    type: 'bar',
-    data: {
-      labels: DAILY_DATA.dates,
-      datasets: [
-        { label: 'Daily PnL', data: DAILY_DATA.pnl, backgroundColor: tsColors, borderWidth: 0, borderRadius: 1 },
-        { label: '14-day Avg', data: rolling, type: 'line', borderColor: 'rgba(255,255,255,0.7)', borderWidth: 1.5, pointRadius: 0, tension: 0.4, yAxisID: 'y' },
-      ]
-    },
-    options: {
-      scales: {
-        x: { ticks: { maxTicksLimit: 12, maxRotation: 0 } },
-        y: { ticks: { callback: v => '$'+Math.round(v/1000)+'K' } }
-      }
-    }
+  const tsColors=DAILY_DATA.sentiment.map(s=>SENT_COLORS[s]+'99');
+  const rolling=DAILY_DATA.pnl.map((_,i,arr)=>{const sl=arr.slice(Math.max(0,i-14),i+1);return sl.reduce((a,b)=>a+b,0)/sl.length;});
+  new Chart(document.getElementById('chart-timeseries'),cfg({
+    type:'bar',
+    data:{labels:DAILY_DATA.dates,datasets:[
+      {label:'Daily PnL',data:DAILY_DATA.pnl,backgroundColor:tsColors,borderWidth:0,borderRadius:1},
+      {label:'14-day Avg',data:rolling,type:'line',borderColor:'rgba(255,255,255,0.65)',borderWidth:1.5,pointRadius:0,tension:0.4,yAxisID:'y'}
+    ]},
+    options:{scales:{x:{ticks:{maxTicksLimit:12,maxRotation:0}},y:{ticks:{callback:v=>'$'+Math.round(v/1000)+'K'}}}}
   }));
-
-  new Chart(document.getElementById('chart-sentline'), cfg({
-    type: 'line',
-    data: {
-      labels: DAILY_DATA.dates,
-      datasets: [{
-        label: 'Sentiment Score',
-        data: DAILY_DATA.score,
-        borderColor: '#4f8ef7',
-        backgroundColor: (ctx) => {
-          const chart = ctx.chart;
-          const {ctx:c, chartArea} = chart;
-          if (!chartArea) return '#4f8ef700';
-          const g = c.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
-          g.addColorStop(0, '#4f8ef733'); g.addColorStop(1, '#4f8ef700');
-          return g;
-        },
-        fill: true,
-        pointRadius: 0,
-        tension: 0.3,
-        borderWidth: 1.5,
-      }]
-    },
-    options: {
-      scales: {
-        x: { ticks: { maxTicksLimit: 12, maxRotation: 0 } },
-        y: { min: 0, max: 100, ticks: { callback: v => v } }
-      },
-      plugins: { legend: { display: false } }
-    }
+  new Chart(document.getElementById('chart-sentline'),cfg({
+    type:'line',
+    data:{labels:DAILY_DATA.dates,datasets:[{label:'F&G Score',data:DAILY_DATA.score,borderColor:'#4a88f5',backgroundColor:(ctx)=>{const ch=ctx.chart;const{ctx:c,chartArea}=ch;if(!chartArea)return'#4a88f500';const g=c.createLinearGradient(0,chartArea.top,0,chartArea.bottom);g.addColorStop(0,'#4a88f530');g.addColorStop(1,'#4a88f500');return g;},fill:true,pointRadius:0,tension:0.3,borderWidth:1.5}]},
+    options:{scales:{x:{ticks:{maxTicksLimit:12,maxRotation:0}},y:{min:0,max:100}},plugins:{legend:{display:false}}}
   }));
 })();
 
-// ── CHART 5: Long/Short ─────────────────────────────────────────────────────
-new Chart(document.getElementById('chart-longshort'), cfg({
-  type: 'bar',
-  data: {
-    labels: LABELS,
-    datasets: [
-      { label: 'Long %', data: LABELS.map(l => DIR_SENT[l].long_pct), backgroundColor: '#22c55e99', borderColor: '#22c55e', borderWidth: 1.5, borderRadius: 4 },
-      { label: 'Short %', data: LABELS.map(l => 100 - DIR_SENT[l].long_pct), backgroundColor: '#f8717199', borderColor: '#f87171', borderWidth: 1.5, borderRadius: 4 },
-    ]
-  },
-  options: { scales: { x: { stacked: true }, y: { stacked: true, max: 100, ticks: { callback: v => v+'%' } } } }
+// ── CHART 5: LONG/SHORT ───────────────────────────────────────────────────
+new Chart(document.getElementById('chart-longshort'),cfg({
+  type:'bar',
+  data:{labels:LABELS,datasets:[
+    {label:'Long %',data:LABELS.map(l=>DIR_SENT[l].long_pct),backgroundColor:'#1eb86599',borderColor:'#1eb865',borderWidth:1.5,borderRadius:4},
+    {label:'Short %',data:LABELS.map(l=>100-DIR_SENT[l].long_pct),backgroundColor:'#f0606099',borderColor:'#f06060',borderWidth:1.5,borderRadius:4}
+  ]},
+  options:{scales:{x:{stacked:true},y:{stacked:true,max:100,ticks:{callback:v=>v+'%'}}}}
 }));
 
-// ── CHART 6: ROI by direction ───────────────────────────────────────────────
-new Chart(document.getElementById('chart-roi'), cfg({
-  type: 'bar',
-  data: {
-    labels: LABELS,
-    datasets: [
-      { label: 'Long ROI (%)', data: LABELS.map(l => CONTRA[l].long), backgroundColor: '#22c55e99', borderColor: '#22c55e', borderWidth: 1.5, borderRadius: 4 },
-      { label: 'Short ROI (%)', data: LABELS.map(l => CONTRA[l].short), backgroundColor: '#f8717199', borderColor: '#f87171', borderWidth: 1.5, borderRadius: 4 },
-    ]
-  },
-  options: { scales: { y: { ticks: { callback: v => v+'%' } } } }
+// ── CHART 6: ROI ──────────────────────────────────────────────────────────
+new Chart(document.getElementById('chart-roi'),cfg({
+  type:'bar',
+  data:{labels:LABELS,datasets:[
+    {label:'Long ROI (%)',data:LABELS.map(l=>CONTRA[l].long),backgroundColor:'#1eb86599',borderColor:'#1eb865',borderWidth:1.5,borderRadius:4},
+    {label:'Short ROI (%)',data:LABELS.map(l=>CONTRA[l].short),backgroundColor:'#f0606099',borderColor:'#f06060',borderWidth:1.5,borderRadius:4}
+  ]},
+  options:{scales:{y:{ticks:{callback:v=>v+'%'}}}}
 }));
 
-// ── CHART 7 & 8: Tier PnL & Win Rate ───────────────────────────────────────
-new Chart(document.getElementById('chart-tier-pnl'), cfg({
-  type: 'bar',
-  data: {
-    labels: LABELS,
-    datasets: [
-      { label: 'Top 20%', data: LABELS.map(l => TIER_DATA[l].top_pnl), backgroundColor: '#4f8ef7bb', borderColor: '#4f8ef7', borderWidth: 1.5, borderRadius: 4 },
-      { label: 'Bottom 80%', data: LABELS.map(l => TIER_DATA[l].bot_pnl), backgroundColor: '#f8717188', borderColor: '#f87171', borderWidth: 1.5, borderRadius: 4 },
-    ]
-  },
-  options: { scales: { y: { ticks: { callback: v => '$'+v } } } }
+// ── CHART 7: TIER PnL ─────────────────────────────────────────────────────
+new Chart(document.getElementById('chart-tier-pnl'),cfg({
+  type:'bar',
+  data:{labels:LABELS,datasets:[
+    {label:'Top 20% (≥$370K)',data:LABELS.map(l=>TIER_DATA[l].top_pnl),backgroundColor:'#4a88f5bb',borderColor:'#4a88f5',borderWidth:1.5,borderRadius:4},
+    {label:'Bottom 80%',data:LABELS.map(l=>TIER_DATA[l].bot_pnl),backgroundColor:'#f0606088',borderColor:'#f06060',borderWidth:1.5,borderRadius:4}
+  ]},
+  options:{scales:{y:{ticks:{callback:v=>'$'+v}}}}
 }));
 
-new Chart(document.getElementById('chart-tier-wr'), cfg({
-  type: 'bar',
-  data: {
-    labels: LABELS,
-    datasets: [
-      { label: 'Top 20%', data: LABELS.map(l => TIER_DATA[l].top_wr), backgroundColor: '#4f8ef7bb', borderColor: '#4f8ef7', borderWidth: 1.5, borderRadius: 4 },
-      { label: 'Bottom 80%', data: LABELS.map(l => TIER_DATA[l].bot_wr), backgroundColor: '#f8717188', borderColor: '#f87171', borderWidth: 1.5, borderRadius: 4 },
-    ]
-  },
-  options: { scales: { y: { min: 40, max: 100, ticks: { callback: v => v+'%' } } } }
+// ── CHART 8: TIER WIN RATE ────────────────────────────────────────────────
+new Chart(document.getElementById('chart-tier-wr'),cfg({
+  type:'bar',
+  data:{labels:LABELS,datasets:[
+    {label:'Top 20% (≥$370K)',data:LABELS.map(l=>TIER_DATA[l].top_wr),backgroundColor:'#4a88f5bb',borderColor:'#4a88f5',borderWidth:1.5,borderRadius:4},
+    {label:'Bottom 80%',data:LABELS.map(l=>TIER_DATA[l].bot_wr),backgroundColor:'#f0606088',borderColor:'#f06060',borderWidth:1.5,borderRadius:4}
+  ]},
+  options:{scales:{y:{min:40,max:100,ticks:{callback:v=>v+'%'}}}}
 }));
 
-// ── FEATURE IMPORTANCE BARS ─────────────────────────────────────────────────
-const FEATS = [
-  { name: 'roi', val: 0.71, color: '#4f8ef7' },
-  { name: 'position_size', val: 0.16, color: '#a78bfa' },
-  { name: 'sentiment_enc', val: 0.08, color: '#f97316' },
-  { name: 'direction_enc', val: 0.05, color: '#22c55e' },
+// ── FEATURE IMPORTANCE ────────────────────────────────────────────────────
+const FEATS=[
+  {name:'sentiment_encoding',val:0.52,color:'#f07820'},
+  {name:'position_size',val:0.31,color:'#9b7ff5'},
+  {name:'direction_encoding',val:0.17,color:'#1eb865'},
 ];
-const fbEl = document.getElementById('feature-bars');
-FEATS.forEach(f => {
-  fbEl.innerHTML += `
-    <div style="margin-bottom:12px;">
-      <div style="display:flex; justify-content:space-between; font-family:'DM Mono',monospace; font-size:11px; color:#6b7a99; margin-bottom:5px;">
-        <span>${f.name}</span><span style="color:#e8edf5">${(f.val*100).toFixed(0)}%</span>
-      </div>
-      <div style="height:8px; background:rgba(255,255,255,0.06); border-radius:4px; overflow:hidden;">
-        <div style="height:100%; width:${f.val*100}%; background:${f.color}; border-radius:4px; transition:width 1.2s ease;"></div>
-      </div>
-    </div>`;
+const fbEl=document.getElementById('feature-bars');
+FEATS.forEach(f=>{
+  fbEl.innerHTML+=`<div class="feat-row"><div class="feat-top"><span>${f.name}</span><span>${(f.val*100).toFixed(0)}%</span></div><div class="feat-track"><div class="feat-fill" style="width:${f.val*100}%;background:${f.color};"></div></div></div>`;
 });
 
-// ── DATE ────────────────────────────────────────────────────────────────────
-document.getElementById('gen-date').textContent = 'April 2026';
+// ── NAV ACTIVE SECTION + PROGRESS ────────────────────────────────────────
+(function(){
+  const navLinks=document.querySelectorAll('.nav-links a');
+  const progress=document.getElementById('nav-progress');
+  const SIDS=['sec-overview','sec-methodology','sec-limits','sec-eda','sec-timeseries','sec-positioning','sec-stats','sec-ml','sec-insights'];
+  const SELS=SIDS.map(id=>document.getElementById(id));
 
-// ── NAV SCROLL LOGIC ────────────────────────────────────────────────────────
-(function () {
-  const nav     = document.getElementById('site-nav');
-  const header  = document.querySelector('header');
-  const links   = nav.querySelectorAll('.nav-links a');
-
-  const SECTIONS = [
-    { id: 'sec-overview',    el: null },
-    { id: 'sec-eda',         el: null },
-    { id: 'sec-timeseries',  el: null },
-    { id: 'sec-positioning', el: null },
-    { id: 'sec-segmentation',el: null },
-    { id: 'sec-stats',       el: null },
-    { id: 'sec-ml',          el: null },
-    { id: 'sec-insights',    el: null },
-    { id: 'sec-strategy',    el: null },
-    { id: 'sec-limitations', el: null },
-  ];
-  SECTIONS.forEach(s => { s.el = document.getElementById(s.id); });
-
-  // show nav after header scrolls out of view
-  const observer = new IntersectionObserver(
-    ([entry]) => {
-      if (!entry.isIntersecting) {
-        nav.classList.add('visible');
-      } else {
-        nav.classList.remove('visible');
-      }
-    },
-    { threshold: 0 }
-  );
-  observer.observe(header);
-
-  // highlight active section
-  function setActive () {
-    const scrollY = window.scrollY + 80;
-    let current = SECTIONS[0].id;
-    SECTIONS.forEach(s => {
-      if (s.el && s.el.offsetTop <= scrollY) current = s.id;
-    });
-    links.forEach(a => {
-      a.classList.toggle('active', a.getAttribute('href') === '#' + current);
-    });
+  function setActive(){
+    const sy=window.scrollY+70;
+    let cur=0;
+    SELS.forEach((el,i)=>{if(el&&el.offsetTop<=sy)cur=i;});
+    navLinks.forEach(a=>a.classList.remove('active'));
+    const active=document.querySelector(`.nav-links a[href="#${SIDS[cur]}"]`);
+    if(active)active.classList.add('active');
+    progress.textContent=`${cur+1} / ${SIDS.length} sections`;
   }
-  window.addEventListener('scroll', setActive, { passive: true });
+  window.addEventListener('scroll',setActive,{passive:true});
   setActive();
 
-  // smooth scroll with offset for fixed nav
-  links.forEach(a => {
-    a.addEventListener('click', e => {
+  navLinks.forEach(a=>{
+    a.addEventListener('click',e=>{
       e.preventDefault();
-      const target = document.querySelector(a.getAttribute('href'));
-      if (target) {
-        const top = target.getBoundingClientRect().top + window.scrollY - 60;
-        window.scrollTo({ top, behavior: 'smooth' });
-      }
+      const tgt=document.querySelector(a.getAttribute('href'));
+      if(tgt){const top=tgt.getBoundingClientRect().top+window.scrollY-55;window.scrollTo({top,behavior:'smooth'});}
     });
   });
 })();
